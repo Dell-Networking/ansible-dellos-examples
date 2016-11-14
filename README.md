@@ -11,7 +11,7 @@ Installation and Setup
 1. Install Ansible. See [Ansible documentation] (http://docs.ansible.com/ansible/intro_installation.html)
 2. Clone this repository in the Control Machine.
 3. Update the ``inventory.yaml`` file to configure the device IP.
-4. Update the corresponding host variables (for example: ``hosts_var/dellos10_sw1.yaml`` for device credentials.
+4. Update the corresponding host variables (for example: ``hosts_var/dellos10_sw1.yaml``) for device credentials.
 
 
 Dell EMC Networking OS6

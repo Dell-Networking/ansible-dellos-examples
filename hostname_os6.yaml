@@ -1,0 +1,11 @@
+---
+- hosts: dellos6
+  connection: local
+  gather_facts: no
+
+  tasks:
+  - name: "Set the hostname for the Dell OS6 Device"
+    dellos6_config:
+      commands: ['hostname {{ hostname }}']
+      provider: "{{ cli }}"
+

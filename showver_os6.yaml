@@ -1,0 +1,22 @@
+---
+- hosts: dellos6
+  connection: local
+  gather_facts: no
+
+  tasks:
+  - name: "Get Dell OS6 Show version"
+    dellos6_command:
+      commands: ['show version']
+      provider: "{{ cli }}"
+    register: show_ver
+
+  - debug: var=show_ver
+
+
+
+
+
+
+
+
+

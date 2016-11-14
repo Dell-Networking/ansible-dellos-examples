@@ -1,0 +1,7 @@
+[dellos10]
+dellos10_sw1 ansible_host=10.11.182.16
+[dellos9]
+dellos9_sw1 ansible_host=10.11.182.17
+[dellos6]
+dellos6_sw1 ansible_host=10.11.182.33
+

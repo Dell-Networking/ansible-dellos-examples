@@ -1,0 +1,22 @@
+---
+- hosts: dellos9
+  connection: local
+  gather_facts: no
+
+  tasks:
+  - name:
+    dellos9_facts:
+      gather_subset: ["all"] 
+      provider: "{{ cli }}"
+    register: facts
+
+  - debug: var=facts
+
+
+
+
+
+
+
+
+

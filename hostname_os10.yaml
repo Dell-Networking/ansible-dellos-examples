@@ -1,0 +1,11 @@
+---
+- hosts: dellos10
+  connection: local
+  gather_facts: no
+
+  tasks:
+  - name: "Set the hostname for the Dell OS9 Device"
+    dellos10_config:
+      commands: ['hostname {{ hostname }}']
+      provider: "{{ cli }}"
+

@@ -1,0 +1,22 @@
+---
+- hosts: dellos10
+  connection: local
+  gather_facts: no
+
+  tasks:
+  - name:
+    dellos10_facts:
+      gather_subset: ["all"] 
+      provider: "{{ cli }}"
+    register: facts
+
+  - debug: var=facts
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,22 @@
+---
+- hosts: dellos9
+  connection: local
+  gather_facts: no
+
+  tasks:
+  - name: "Get Dell OS9 Show version"
+    dellos9_command:
+      commands: ['show version']
+      provider: "{{ cli }}"
+    register: show_ver
+
+  - debug: var=show_ver
+
+
+
+
+
+
+
+
+

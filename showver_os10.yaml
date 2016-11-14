@@ -1,0 +1,22 @@
+---
+- hosts: dellos10
+  connection: local
+  gather_facts: no
+
+  tasks:
+  - name: "Get Dell OS10 Show version"
+    dellos10_command:
+      commands: ['show version']
+      provider: "{{ cli }}"
+    register: show_ver
+
+  - debug: var=show_ver
+
+
+
+
+
+
+
+
+
