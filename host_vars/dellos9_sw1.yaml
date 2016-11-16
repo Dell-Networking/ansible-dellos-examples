@@ -1,9 +1,9 @@
 hostname: dellos9_sw1
 cli:
   host: "{{ ansible_host }}"
-  username: admin
-  password: admin
+  username: xxxxx
+  password: xxxxx
   authorize: yes
-  auth_pass: calvin
+  auth_pass: xxxxx
   transport: cli
 
