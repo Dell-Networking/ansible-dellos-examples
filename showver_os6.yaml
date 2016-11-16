@@ -4,7 +4,7 @@
   gather_facts: no
 
   tasks:
-  - name: "Get Dell OS6 Show version"
+  - name: "Get Dell EMC OS6 Show version"
     dellos6_command:
       commands: ['show version']
       provider: "{{ cli }}"

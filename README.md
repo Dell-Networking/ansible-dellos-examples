@@ -2,7 +2,7 @@
 Examples of Dell EMC Networking Ansible Modules
 ===============================================
 
-Use these sample example Ansible playbooks to understand the Dell EMC Networking Ansible modules.
+Use these sample Ansible playbooks to better understand how to use Dell EMC Networking Ansible modules.
 
 
 Installation and Setup
@@ -60,3 +60,8 @@ Example for dellos10_command module. This executes the show version command.
 Example for dellos10_config module. This configures th ehostname for the OS10 device.
 
 ``ansible-playbook -vvv -i inventory.yaml hostname_os10.yaml``
+
+
+Contact
+--------
+Send general comments and feedback to: feedback-ansible-dell-networking@dell.com

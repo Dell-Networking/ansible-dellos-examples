@@ -4,7 +4,7 @@
   gather_facts: no
 
   tasks:
-  - name: "Set the hostname for the Dell OS6 Device"
+  - name: "Set the hostname for the Dell EMC OS6 Device"
     dellos6_config:
       commands: ['hostname {{ hostname }}']
       provider: "{{ cli }}"
