@@ -61,6 +61,11 @@ Example for dellos10_config module. This configures th ehostname for the OS10 de
 ``ansible-playbook -vvv -i inventory.yaml hostname_os10.yaml``
 
 
+Note:
+------
+- For Ansible 2.4 and devel, use master branch.
+- For Ansible 2.3 and older, use release tag 1.0.0.
+
 Contact
 --------
 Send general comments and feedback to: feedback-ansible-dell-networking@dell.com

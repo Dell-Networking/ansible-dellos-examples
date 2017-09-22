@@ -5,5 +5,3 @@ cli:
   password: xxxxx
   authorize: yes
   auth_pass: xxxxx
-  transport: cli
-

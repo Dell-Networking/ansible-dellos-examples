@@ -3,4 +3,3 @@ cli:
   host: "{{ ansible_host }}"
   username: xxxxx
   password: xxxxx
-  transport: cli
