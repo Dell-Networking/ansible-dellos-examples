@@ -1,0 +1,17 @@
+---
+# tasks file for dellos-bmp
+
+ - name: "Configure Reload Type to normal reload."
+   dellos9_config:
+      lines: ['boot-type normal-reload']
+      parents: ['reload-type']
+      provider: "{{ cli }}"
+      save: true
+
+ - name: "Copy Partition Active --> Inactive"
+   dellos9_command:
+      commands: ['partition copy active inactive']
+      provider: "{{ cli }}"
+      timeout: 300
+
+
