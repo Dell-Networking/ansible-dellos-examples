@@ -1,0 +1,17 @@
+---
+- hosts: dellos10
+  connection: network_cli
+  gather_facts: no
+
+  tasks:
+  - name: " Reload Dell EMC OS10 Device"
+    dellos10_config:
+      commands:  
+        - command: do reload
+          prompt: '\[confirm yes/no\]:\s?$'
+          answer: "no"
+    register: handle_prompt
+
+  - debug: var=handle_prompt
+
+
