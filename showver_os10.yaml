@@ -4,7 +4,7 @@
   gather_facts: no
 
   tasks:
-  - name: "Get Dell EMC OS9 Show version"
+  - name: "Get Dell EMC OS10 Show version"
     dellos10_command:
       commands: ['show version']
     register: show_ver

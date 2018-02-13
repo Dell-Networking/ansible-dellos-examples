@@ -1,14 +1,5 @@
 hostname: dellos9_sw1
 
-# parameters for connection type local
-cli:
-  host: "{{ ansible_host }}"
-  username: xxxxx
-  password: xxxxx
-  authorize: yes
-  auth_pass: xxxxx
-
-# parametes for connection type network_cli
 ansible_become: yes
 ansible_become_method: xxxxx
 ansible_become_pass: xxxxx
