@@ -1,11 +1,11 @@
 ---
 - hosts: dellos6
-  connection: local
+  connection: network_cli
   gather_facts: no
 
   tasks:
   - name: "Set the hostname for the Dell EMC OS6 Device"
     dellos6_config:
-      commands: ['hostname {{ hostname }}']
-      provider: "{{ cli }}"
-
+      commands: ['hostname "{{ hostname }}"']
+    register: set_hostname
+  - debug: var = set_hostname

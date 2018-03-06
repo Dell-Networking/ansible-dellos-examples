@@ -1,13 +1,12 @@
 ---
 - hosts: dellos9
-  connection: local
+  connection: network_cli
   gather_facts: no
 
   tasks:
   - name: "Gather Dell EMC OS9 Device Facts"
     dellos9_facts:
       gather_subset: ["all"] 
-      provider: "{{ cli }}"
     register: facts
 
   - debug: var=facts

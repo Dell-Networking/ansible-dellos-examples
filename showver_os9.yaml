@@ -1,22 +1,12 @@
 ---
 - hosts: dellos9
-  connection: local
+  connection: network_cli
   gather_facts: no
 
   tasks:
   - name: "Get Dell EMC OS9 Show version"
     dellos9_command:
       commands: ['show version']
-      provider: "{{ cli }}"
     register: show_ver
 
   - debug: var=show_ver
-
-
-
-
-
-
-
-
-

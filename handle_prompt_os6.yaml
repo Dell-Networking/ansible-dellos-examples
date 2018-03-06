@@ -1,0 +1,16 @@
+---
+- hosts: dellos6
+  connection: network_cli
+  gather_facts: no
+
+  tasks:
+  - name: "Copy running-config to startup-config for the Dell EMC OS6 Device"
+    dellos6_config:
+      commands:  
+        - command: do copy running-config startup-config
+          prompt: '\(y/n\)$'
+          answer: "no"
+    register: handle_prompt
+
+  - debug: var=handle_prompt
+
