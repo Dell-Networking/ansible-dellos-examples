@@ -8,4 +8,5 @@
     dellos6_config:
       commands: ['hostname "{{ hostname }}"']
     register: set_hostname
-  - debug: var = set_hostname
+    
+  - debug: var=set_hostname

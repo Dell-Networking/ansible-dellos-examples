@@ -8,7 +8,7 @@
     dellos10_config:
       commands:  
         - command: do reload
-          prompt: '\[confirm yes/no\]:\s?$'
+          prompt: '\[confirm yes/no\]:?$'
           answer: "no"
     register: handle_prompt
 
