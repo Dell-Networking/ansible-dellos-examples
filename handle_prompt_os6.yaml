@@ -8,7 +8,7 @@
     dellos6_config:
       commands:  
         - command: do copy running-config startup-config
-          prompt: '\(y/n\)$'
+          prompt: '\(y/n\)\s?$'
           answer: "no"
     register: handle_prompt
 
