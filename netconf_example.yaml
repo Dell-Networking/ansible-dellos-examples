@@ -1,0 +1,17 @@
+---
+- hosts: dellos10
+  connection: netconf
+
+  tasks:
+   - name: Configure vlan-106 in the device
+     netconf_config:
+       hostkey_verify: false
+       xml: |
+         <config>
+           <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces" xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type" xmlns:dell-if="http://www.dellemc.com/networking/os10/dell-interface" xmlns:dell-eth="http://www.dellemc.com/networking/os10/dell-ethernet" xmlns:dell-lag="http://www.dellemc.com/networking/os10/dell-lag" xmlns:dell-lacp="http://www.dellemc.com/networking/os10/dell-lacp">
+             <interface>
+               <type>ianaift:l2vlan</type>
+               <name>vlan106</name>
+             </interface>
+           </interfaces>
+         </config>
