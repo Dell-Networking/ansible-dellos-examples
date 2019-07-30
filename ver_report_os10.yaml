@@ -1,0 +1,33 @@
+---
+# Ansible Playbook to create an Image Version Report of OS10 Switches
+# Written by Bob Okony - DellEMC Advisory Systems Engineer
+#
+- hosts: localhost 
+  connection: local  
+  gather_facts: false 
+  tasks:
+  - name: Remove local file if present
+    file: 
+       path: ShowVer_Report.txt 
+       state: absent
+  - name: Create local file for Report output
+    file:   
+       path: ShowVer_Report.txt 
+       state: touch
+  - name: Create Report Header in Output File
+    copy: 
+      dest: ./ShowVer_Report.txt
+      content: "Switch Version Report - Created by Ansible:\n\n"
+
+
+- hosts: dellos10
+  connection: network_cli 
+  gather_facts: false
+  serial: 1
+  tasks:
+  - name: Get OS10 Switch Facts
+    dellos10_facts:
+      gather_subset: all
+  - lineinfile:
+      dest: ./ShowVer_Report.txt
+      line: "Switch {{ansible_ssh_host}} is running version {{ansible_net_version}} of OS10 {{ansible_net_name}}"
