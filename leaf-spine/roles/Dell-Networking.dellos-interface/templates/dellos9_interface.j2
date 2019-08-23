@@ -1,0 +1,240 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{###################################################
+
+Purpose:
+Configure interface commands for dellos9 Devices.
+
+dellos_interface:
+    TenGigabitEthernet 1/36:
+            desc: "OS9 intf"
+            portmode: hybrid
+            mtu: 2000
+            switchport: False
+            admin: up
+            auto_neg: true
+            keepalive: true
+            ip_and_mask: "192.168.13.1/24"
+            ip_and_mask_secondary: "192.168.14.1/24"
+            secondary_ip_state: present
+            suppress_ra: present
+            ip_type_dynamic: true
+            ipv6_and_mask: 2001:4898:5808:ffa2::9/126
+            ipv6_reachabletime: 60000
+            ip_helper:
+              - ip: 10.0.0.33
+                state: present
+            class_vendor_identifier: present
+            option82: true
+            remote_id: hostname
+            speed: auto
+            duplex: half
+    fortyGigE 1/1:
+            fanout: single
+            fanout_speed: 40G
+            fanout_state: present
+    fortyGigE 0/8:
+            cr4_auto_neg: true
+
+####################################################}
+{% if dellos_interface is defined and dellos_interface %}
+{% for key in dellos_interface.keys() %}
+  {% set intf_vars  = dellos_interface[key] %}
+  {% set intf = key.split(" ") %}
+  {% set port = intf[1].split('/') %}
+  {% if intf_vars.fanout is defined %}
+    {% if intf_vars.fanout %}
+      {% if intf_vars.fanout_state is defined and intf_vars.fanout_state == "present" %}
+        {% if intf_vars.fanout_speed is defined and intf_vars.fanout_speed %}
+stack-unit {{ port[0] }} port {{ port[1] }} portmode {{ intf_vars.fanout}} speed {{ intf_vars.fanout_speed }} no-confirm
+        {% else %}
+stack-unit {{ port[0] }} port {{ port[1] }} portmode {{ intf_vars.fanout }} no-confirm
+        {% endif %}
+      {% else %}
+no stack-unit {{ port[0] }} port {{ port[1] }} portmode {{ intf_vars.fanout }} no-confirm
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+{% for key in dellos_interface.keys() %}
+{% set intf_vars  = dellos_interface[key] %}
+{% set intf = key.split(" ") %}
+{% set port = intf[1].split('/') %}
+  {% if (intf_vars.fanout is defined and not intf_vars.fanout) or (intf_vars.fanout is not defined)%}
+interface {{ key }}
+    {% if intf_vars.desc is defined %}
+      {% if intf_vars.desc %}
+ description {{ intf_vars.desc }}
+      {% else %}
+ no description
+      {% endif %}
+    {% endif %}
+  
+    {% if intf_vars.portmode is defined %}
+      {% if intf_vars.switchport is defined and intf_vars.switchport == False %}
+ no switchport
+      {% endif %}
+      {% if intf_vars.portmode %}
+ portmode {{ intf_vars.portmode}}
+      {% else %}
+ no portmode hybrid
+      {% endif %}
+    {% endif %}
+
+    {% if intf_vars.switchport is defined %}
+      {% if intf_vars.switchport == True %}
+ switchport
+      {% endif %}
+      {% if intf_vars.portmode is not defined %}
+        {% if intf_vars.switchport is defined and intf_vars.switchport == False %}
+ no switchport
+        {% endif %}
+      {% endif %}
+    {% endif %}
+
+    {% if intf_vars.mtu is defined %}
+      {% if intf_vars.mtu %}
+ mtu {{ intf_vars.mtu }}
+      {% else %}
+ no mtu
+      {% endif %}
+    {% endif %}
+
+    {% if intf_vars.keepalive is defined %}
+      {% if intf_vars.keepalive %}
+ keepalive
+      {% else %}
+ no keepalive
+      {% endif %}
+    {% endif %}
+ 
+    {% if intf_vars.speed is defined %}
+      {% if intf_vars.speed %}
+ speed {{ intf_vars.speed }}
+      {% else %}
+ no speed
+      {% endif %}
+    {% endif %}
+
+    {% if intf_vars.duplex is defined %}
+      {% if intf_vars.duplex %}
+ duplex {{ intf_vars.duplex }}
+      {% else %}
+ no duplex
+      {% endif %}
+    {% endif %}
+
+    {% if intf_vars.auto_neg is defined %}
+      {% if intf_vars.auto_neg %}
+ negotiation auto
+      {% else %}
+ no negotiation auto
+      {% endif %}
+    {% endif %}
+
+    {% if intf_vars.cr4_auto_neg is defined %}
+      {% if intf_vars.cr4_auto_neg %}
+ intf-type cr4 autoneg
+      {% else %}
+ no intf-type cr4 autoneg
+      {% endif %}
+    {% endif %}
+
+    {% if intf_vars.suppress_ra is defined %}
+      {% if intf_vars.suppress_ra == "present" %}
+ ipv6 nd suppress-ra
+      {% else %}
+ no ipv6 nd suppress-ra
+      {% endif %}
+    {% endif %}
+
+    {% if intf_vars.ip_type_dynamic is defined and intf_vars.ip_type_dynamic %}
+      {% if intf_vars.class_vendor_identifier is defined and intf_vars.class_vendor_identifier == "present" %}
+        {% if intf_vars.option82 is defined and intf_vars.option82 %}
+          {% if intf_vars.remote_id is defined and intf_vars.remote_id %}
+ ip address dhcp vendor-class-identifier relay information-option remote-id {{ intf_vars.remote_id }}
+          {% else %}
+ ip address dhcp relay information-option vendor-class-identifier
+          {% endif %}
+        {% else %}
+ ip address dhcp vendor-class-identifier
+        {% endif %}
+
+      {% elif intf_vars.class_vendor_identifier is defined and (intf_vars.class_vendor_identifier|length >1 and not intf_vars.class_vendor_identifier == "absent") %}
+        {% if intf_vars.option82 is defined and intf_vars.option82 %}
+          {% if intf_vars.remote_id is defined and intf_vars.remote_id %}
+ ip address dhcp relay information-option remote-id {{ intf_vars.remote_id }} vendor-class-identifier {{ intf_vars.class_vendor_identifier }}
+          {% else %}
+ ip address dhcp relay information-option vendor-class-identifier {{ intf_vars.class_vendor_identifier }}
+          {% endif %}
+        {% else %}
+ ip address dhcp vendor-class-identifier {{ intf_vars.class_vendor_identifier }}
+        {% endif %}
+      
+      {% else %}
+        {% if intf_vars.option82 is defined and intf_vars.option82 %}
+          {% if intf_vars.remote_id is defined and intf_vars.remote_id %}
+ ip address dhcp relay information-option remote-id {{ intf_vars.remote_id }}
+          {% else %}
+ ip address dhcp relay information-option
+          {% endif %}
+        {% else %}
+ ip address dhcp
+        {% endif %}
+      {% endif %}
+    {% else %}
+      {% if intf_vars.ip_and_mask is defined %}
+        {% if intf_vars.ip_and_mask %}
+ ip address {{ intf_vars.ip_and_mask }}
+        {% else %}
+ no ip address
+        {% endif %}
+      {% endif %}
+      {% if intf_vars.ip_and_mask_secondary is defined and intf_vars.ip_and_mask_secondary %}
+        {% if secondary_ip_state is defined and secondary_ip_state == "absent" %}
+ no ip address {{ intf_vars.ip_and_mask_secondary }} secondary
+        {% else %}
+ ip address {{ intf_vars.ip_and_mask_secondary }} secondary
+        {% endif %}
+      {% endif %}
+    {% endif %}
+
+
+    {% if intf_vars.ipv6_and_mask is defined %}
+      {% if intf_vars.ipv6_and_mask %}
+ ipv6 address {{ intf_vars.ipv6_and_mask }}
+      {% else %}
+ no ipv6 address
+      {% endif %}
+    {% endif %}
+
+    {% if intf_vars.ipv6_reachabletime is defined %}
+      {% if intf_vars.ipv6_reachabletime %}
+ ipv6 nd reachable-time {{ intf_vars.ipv6_reachabletime }}
+      {% else %}
+ no ipv6 nd reachable-time
+      {% endif %}
+    {% endif %}
+
+    {% if intf_vars.ip_helper is defined and intf_vars.ip_helper %}
+      {% for helper in intf_vars.ip_helper %}
+        {% if helper.ip is defined and helper.ip %}
+          {% if helper.state is defined and helper.state == "absent" %}
+ no ip helper-address {{ helper.ip }}
+          {% else %}
+ ip helper-address {{ helper.ip }}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {% if intf_vars.admin is defined %}
+      {% if intf_vars.admin == "up" %}
+ no shutdown
+      {% elif intf_vars.admin == "down" %}
+ shutdown
+      {% endif %}
+    {% endif %}
+
+  {% endif %}
+{% endfor %}
+{% endif %}

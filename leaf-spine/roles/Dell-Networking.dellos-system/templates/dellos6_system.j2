@@ -1,0 +1,34 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{####################################
+
+Purpose:
+Configure system commands for dellos6 devices
+
+dellos_system:
+    hostname: os6
+    enable_password: force10
+    mtu: 2000
+
+#####################################}
+{% if dellos_system is defined and dellos_system %}
+
+{% if dellos_system.hostname is defined and dellos_system.hostname %}
+hostname "{{ dellos_system.hostname }}"
+{% endif %}
+{% for key,value in dellos_system.iteritems() %}
+
+  {% if key == "enable_password" %}
+    {% if value  %}
+enable password {{ value }}
+    {% else %}
+no enable password
+    {% endif %}
+  {% elif key== "mtu" %}
+    {% if value %}
+system jumbo mtu {{ value }}
+    {% else %}
+no system jumbo mtu
+    {% endif %}
+  {% endif %}
+{% endfor %}
+{% endif %}

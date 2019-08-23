@@ -1,0 +1,162 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+{#############################################
+PURPOSE: Configure xSTP commands for dellos9 Devices
+
+dellos_xstp:
+    type: stp
+    enable: true
+    stp:
+      bridge_priority: 4096
+      state: present
+
+    rstp:
+      bridge_priority: 4096
+      state: present
+
+    pvst:
+      vlan:
+        - range_or_id: 10
+          bridge_priority: 4096
+      state: present
+
+    mstp:
+      mstp_instances:
+        - number: 1
+          vlans: 10,12
+          vlans_state: present
+          bridge_priority: 4096
+      state: present
+    intf:
+      fortyGigE 1/1:
+        stp_type:
+          - rstp
+          - mstp
+        edge_port: true
+
+############################################}
+{% if dellos_xstp is defined and dellos_xstp %}
+{% set xstp_vars = dellos_xstp %}
+{% if xstp_vars.type is defined and xstp_vars.type %}
+  {% if xstp_vars.type == "stp" %}
+protocol spanning-tree 0
+  {% else %}
+protocol spanning-tree {{ xstp_vars.type }}
+  {% endif %}
+  {% if xstp_vars.enable is defined %}
+    {% if xstp_vars.enable %}
+ no disable
+    {% else %}
+ disable
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{% if xstp_vars.stp is defined and xstp_vars.stp %}
+  {% set val = xstp_vars.stp %}
+    {% if val.state is defined and val.state == "absent" %}
+no protocol spanning-tree 0
+    {% else %}
+      {% if val.bridge_priority is defined %}
+protocol spanning-tree 0
+        {% if val.bridge_priority == 0 or val.bridge_priority %}
+ bridge-priority {{ val.bridge_priority }}
+        {% else %}
+ no bridge-priority
+        {% endif %} 
+      {% endif %}
+    {% endif %}
+{% endif %}
+
+{% if xstp_vars.rstp is defined and xstp_vars.rstp %}
+  {% set val = xstp_vars.rstp %}
+    {% if val.state is defined and val.state == "absent" %}
+no protocol spanning-tree rstp
+    {% else %}
+      {% if val.bridge_priority is defined %}
+protocol spanning-tree rstp
+        {% if val.bridge_priority == 0 or val.bridge_priority %}
+ bridge-priority {{ val.bridge_priority }}
+        {% else %}
+ no bridge-priority
+        {% endif %}
+      {% endif %}
+    {% endif %}
+{% endif %}
+ 
+{% if xstp_vars.pvst is defined and xstp_vars.pvst %}
+  {% set val = xstp_vars.pvst %}
+    {% if val.state is defined and val.state == "absent" %}
+no protocol spanning-tree pvst
+    {% else %}
+      {% if val.vlan is defined and val.vlan %}
+protocol spanning-tree pvst
+        {% for vlan in val.vlan %}
+          {% if vlan.range_or_id is defined and vlan.range_or_id %}
+            {% if vlan.bridge_priority is defined %}
+              {% if vlan.bridge_priority == 0 or vlan.bridge_priority %}
+ vlan {{ vlan.range_or_id }} bridge-priority {{ vlan.bridge_priority }}
+              {% else %}
+ no vlan {{ vlan.range_or_id }} bridge-priority
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+{% endif %}
+
+{% if xstp_vars.mstp is defined and xstp_vars.mstp %}
+  {% set val = xstp_vars.mstp %}
+    {% if val.state is defined and val.state == "absent" %}
+no protocol spanning-tree mstp
+    {% else %}
+      {% if val.mstp_instances is defined and val.mstp_instances %}
+protocol spanning-tree mstp
+        {% for instance in val.mstp_instances %}
+          {% if instance.number is defined and instance.number %}
+            {% if instance.bridge_priority is defined %}
+              {% if instance.bridge_priority == 0 or instance.bridge_priority %}
+ MSTI {{ instance.number }} bridge-priority {{ instance.bridge_priority }}
+              {% else %}
+ no MSTI {{ instance.number }} bridge-priority
+              {% endif %}
+            {% endif %}
+            {% if instance.vlans is defined and instance.vlans %}
+              {% if instance.vlans_state is defined and instance.vlans_state == "absent" %}
+ no MSTI {{ instance.number }} VLAN {{ instance.vlans }}
+              {% else %}
+ MSTI {{ instance.number }} VLAN {{ instance.vlans }}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+{% endif %}
+
+{% if xstp_vars.intf is defined and xstp_vars.intf %}
+  {% for intr in xstp_vars.intf.keys() %}
+    {% set intf_vars = xstp_vars.intf[intr] %}
+interface {{ intr }}
+      {% for type in intf_vars.stp_type %}
+        {% if type == "stp" %}
+          {% if intf_vars.edge_port is defined %}
+            {% if not intf_vars.edge_port %}
+ no spanning-tree 0 portfast
+            {% else %}
+ spanning-tree 0 portfast bpduguard
+            {% endif %}
+          {% endif %}
+        {% else %}
+          {% if intf_vars.edge_port is defined %}
+            {% if intf_vars.edge_port %}
+ spanning-tree {{ type }} edge-port
+            {% else %}
+ no spanning-tree {{ type }} edge-port
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+  {% endfor %}
+{% endif %}
+{% endif %}

@@ -1,0 +1,50 @@
+---
+# vars file for Dell-Networking.dellos-lag
+
+# Sample variables for dellos9 device
+dellos_lag:
+    Po 127:
+      type: dynamic
+      lacp:
+        long_timeout: true
+        fast_switchover: true
+      lacp_ungroup_vlt: true
+      lacp_system_priority: 1
+      lacp_ungroup:
+        - port_channel: 1
+          state: present
+      min_links: 3
+      channel_members:
+        - port: fortyGigE 1/4
+          state: present
+        - port: fortyGigE 1/8
+          state: present
+      state: present
+
+# Sample variables for dellos6 device
+ dellos_lag: 
+    Po 128:
+      type: static
+      hash: 7
+      min_links: 3
+      channel_members:
+        - port: Te1/0/1
+          state: absent
+        - port: Te1/0/2
+          state: present
+      state: present
+
+# Sample variables for dellos10 device
+
+dellos_lag:
+  Po 12:
+     type: dynamic
+     min_links: 2
+     max_bundle_size: 2
+     lacp_system_priority: 2
+     channel_members:
+       - port: ethernet 1/1/31
+         mode: "active"
+         port_priority: 3
+         lacp_rate_fast: true
+     state: present

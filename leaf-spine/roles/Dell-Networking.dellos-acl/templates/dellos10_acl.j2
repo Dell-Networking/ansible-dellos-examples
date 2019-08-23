@@ -1,0 +1,212 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{####################################
+
+Purpose:
+Configure ACL commands for dellos10 devices
+
+dellos_acl:
+   - name: ssh-only
+     type: ipv4
+     description: acl
+     remark:
+       - description: 1
+         number: 3
+         state: present
+     entries:
+       - number: 10
+         permit: true
+         protocol: tcp 
+         source: any
+         destination: any 
+         src_condition: eq 22
+         dest_condition: eq 2 ack
+         other_options: count
+         state: present
+     stage_ingress:
+          - name: ethernet 1/1/1
+            state: present
+          - name: ethernet 1/0/1
+            state: present
+     stage_egress:
+          - name: ethernet 1/1/2
+            state: present
+     lineterminal:
+          state: present
+     state: present
+#####################################}
+{% if dellos_acl is defined and dellos_acl %}
+  {% for val in dellos_acl %}
+    {% if val.name is defined and val.name %}
+      {% if val.state is defined and val.state == "absent" %}
+        {% if val.type is defined and val.type == "ipv4" %}
+no ip access-list {{ val.name }}
+        {% elif val.type is defined and val.type == "ipv6" %}
+no ipv6 access-list {{ val.name }}
+        {% elif val.type is defined and val.type == "mac" %}
+no mac access-list {{ val.name }}
+        {% endif %}
+      {% else %}
+        {% if val.type is defined and val.type == "ipv4" %}
+ip access-list {{ val.name }}
+        {% elif val.type is defined and val.type == "ipv6" %}
+ipv6 access-list {{ val.name }}
+        {% elif val.type is defined and val.type == "mac" %}
+mac access-list {{ val.name }}
+        {% endif %}
+        {% if val.description is defined %}
+          {% if val.description %}
+ description "{{ val.description }}"
+          {% endif %} 
+        {% endif %}
+        {% if val.remark is defined and val.remark %}
+          {% for remark in val.remark %}
+            {% if remark.description is defined and remark.description %}
+              {% if remark.number is defined and remark.number %}
+                {% if remark.state is defined and remark.state == "absent" %}
+ no seq {{ remark.number }}
+                {% else %}
+ seq {{ remark.number }} remark "{{ remark.description }}"
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% if val.entries is defined and val.entries %}
+          {% for rule in val.entries %}
+            {% if rule.number is defined and rule.number %}
+              {% if rule.state is defined and rule.state == "absent" %}
+ no seq {{ rule.number }}
+              {% else %}
+                {% if rule.permit is defined %}
+                {% if rule.permit %}
+                  {% set is_permit = "permit" %}
+                {% else %}
+                  {% set is_permit = "deny" %}
+                {% endif %}
+                {% endif %}
+                {% if val.type is defined and val.type  %}
+                  {% if rule.protocol is defined and rule.protocol %}
+                    {% if rule.source is defined and rule.source %}        
+                      {% if rule.src_condition is defined and rule.src_condition %}
+                        {% if rule.destination is defined and rule.destination %}
+                          {% if rule.dest_condition is defined and rule.dest_condition %}
+                            {% if rule.other_options is defined and rule.other_options %}
+                            {% set other_options = rule.other_options %}
+ seq {{ rule.number }} {{ is_permit }} {{ rule.protocol }} {{ rule.source }} {{ rule.src_condition }} {{ rule.destination }} {{ rule.dest_condition }} {{ other_options }}
+                            {% else %}
+ seq {{ rule.number }} {{ is_permit }} {{ rule.protocol }} {{ rule.source }} {{ rule.src_condition }} {{ rule.destination }} {{ rule.dest_condition }}
+                            {% endif %}
+                          {% else %}
+                            {% if rule.other_options is defined and rule.other_options %}
+                            {% set other_options = rule.other_options %}
+ seq {{ rule.number }} {{ is_permit }} {{ rule.protocol }} {{ rule.source }} {{ rule.src_condition }} {{ rule.destination }} {{ other_options }}
+                            {% else %}
+ seq {{ rule.number }} {{ is_permit }} {{ rule.protocol }} {{ rule.source }} {{ rule.src_condition }} {{ rule.destination }}
+                            {% endif %}
+                          {% endif %}
+                        {% endif %}
+                      {% else %}
+                        {% if rule.destination is defined and rule.destination %}
+                          {% if rule.dest_condition is defined and rule.dest_condition %}
+                            {% if rule.other_options is defined and rule.other_options %}
+                            {% set other_options = rule.other_options %}
+ seq {{ rule.number }} {{ is_permit }} {{ rule.protocol }} {{ rule.source }} {{ rule.destination }} {{ rule.dest_condition }} {{ other_options }}
+                            {% else %}
+ seq {{ rule.number }} {{ is_permit }} {{ rule.protocol }} {{ rule.source }} {{ rule.destination }} {{ rule.dest_condition }}
+                            {% endif %}
+                          {% else %}
+                            {% if rule.other_options is defined and rule.other_options %}
+                            {% set other_options = rule.other_options %}
+ seq {{ rule.number }} {{ is_permit }} {{ rule.protocol }} {{ rule.source }} {{ rule.destination }} {{ other_options }}
+                            {% else %}
+ seq {{ rule.number }} {{ is_permit }} {{ rule.protocol }} {{ rule.source }} {{ rule.destination }}
+                            {% endif %}
+                          {% endif %}
+                        {% endif %}
+                      {% endif %}
+                    {% endif %}
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        {% if val.lineterminal is defined and val.lineterminal %}
+          {% if val.type is defined and not val.type == "mac" %}
+line vty
+            {% if val.lineterminal.state is defined and val.lineterminal.state == "absent" %}
+              {% if val.type == "ipv6" %}
+ no ipv6 access-class {{ val.name }} 
+              {% elif val.type == "ipv4" %}
+ no ip access-class {{ val.name }} 
+              {% endif %}
+            {% else %}
+              {% if val.type == "ipv6" %}
+ ipv6 access-class {{ val.name }} 
+              {% elif val.type == "ipv4" %}
+ ip access-class {{ val.name }} 
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+
+        {% if val.stage_ingress is defined and val.stage_ingress %}
+          {% for intf in val.stage_ingress %}
+            {% if intf.state is defined and intf.state == "absent" %}
+              {% if intf.name is defined and intf.name %}
+interface {{ intf.name }}
+                {% if val.type is defined and val.type == "mac" %}
+ no mac access-group {{ val.name }} in
+                {% elif val.type is defined and val.type == "ipv6" %}
+ no ipv6 access-group {{ val.name }} in
+                {% else %}
+ no ip access-group {{ val.name }} in
+                {% endif %}
+              {% endif %}
+            {% else %}
+              {% if intf.name is defined and intf.name %}
+interface {{ intf.name }}
+                {% if val.type is defined and val.type == "mac" %}
+ mac access-group {{ val.name }} in
+                {% elif val.type is defined and val.type == "ipv6" %}
+ ipv6 access-group {{ val.name }} in
+                {% else %}
+ ip access-group {{ val.name }} in
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        {% if val.stage_egress is defined and val.stage_egress %}
+          {% for intf in val.stage_egress %}
+            {% if intf.state is defined and intf.state == "absent" %}
+              {% if intf.name is defined and intf.name %}
+interface {{ intf.name }}
+                {% if val.type is defined and val.type == "mac" %}
+ no mac access-group {{ val.name }} out
+                {% elif val.type is defined and val.type == "ipv6" %}
+ no ipv6 access-group {{ val.name }} out
+                {% else %}
+ no ip access-group {{ val.name }} out
+                {% endif %}
+              {% endif %}
+            {% else %}
+              {% if intf.name is defined and intf.name %}
+interface {{ intf.name }}
+                {% if val.type is defined and val.type == "mac" %}
+ mac access-group {{ val.name }} out
+                {% elif val.type is defined and val.type == "ipv6" %}
+ ipv6 access-group {{ val.name }} out
+                {% else %}
+ ip access-group {{ val.name }} out
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+{% endif %}

@@ -1,0 +1,17 @@
+---
+# tasks file for Dell-Networking.dellos-verify-bgp
+
+- name: BGP neighbor command show
+  dellos10_command:
+    commands: show ip bgp neighbors "{{ dellos_bgp['neighbor'][item|int]['ip'] }}"
+  with_sequence: 0-3
+  when: dellos_bgp is defined
+  register: result_bgp
+  changed_when: false
+
+- name: Verify the BGP neighbor is in established state
+  assert:
+    that: "'ESTABLISHED' in result_bgp.results[item|int].stdout[0]"
+    msg: "BGP state is not established"
+  with_sequence: 0-3
+  when: dellos_bgp is defined

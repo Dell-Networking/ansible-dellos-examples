@@ -1,0 +1,219 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+{##########################################
+Purpose:
+Configure VRRP commands for dellos9 Devices
+
+dellos_vrrp:
+    fortyGigE 1/4:
+      vrrp:
+        delay_min: 2
+        delay_reload: 2 
+      vrrp_group:
+        - group_id: 2
+          type: ipv6
+          description: "Interface-vrrp-ipv6"
+          virtual_address: 2001:4898:5808:ffa3::9
+          enable: true
+          priority: 120
+          preempt: false
+          track_interface:
+            - resource_id: 3
+              priority_cost: 25
+              state: present
+            - interface: port-channel 120
+              priority_cost: 20
+            - interface: fortyGigE 1/10
+              state: present
+          track_interface_state: present
+          adv_interval_centisecs: 200
+          hold_time_centisecs: 20
+          state: present
+
+        - group_id: 4
+          state: present
+          description: "Interface-vrrp4"
+          virtual_address: 10.2.0.1
+          enable: true
+          priority: 120
+          preempt: false
+          version: 2
+          track_interface: 
+            - resource_id: 3
+              priority_cost: 25
+              state: present
+            - interface: port-channel 120
+              priority_cost: 20
+            - interface: fortyGigE 1/12
+              state: present 
+          track_interface_state: present
+          adv_interval_centisecs: 200
+          hold_time_centisecs: 20
+          authentication:
+            key: 0
+            key_string: vrrpkey
+            state: present
+#########################################}
+{% if dellos_vrrp is defined and dellos_vrrp %}
+{% for key,value in dellos_vrrp.iteritems() %} 
+interface {{ key }}
+  {% if value %}
+  {% if value.vrrp is defined and value.vrrp %}
+    {% if value.vrrp.delay_min is defined %}
+      {% if value.vrrp.delay_min >=0 %}
+ vrrp delay minimum {{ value.vrrp.delay_min }}
+      {% else %}
+ no vrrp delay minimum 
+      {% endif %}
+    {% endif %}
+    {% if value.vrrp.delay_reload is defined %}
+      {% if value.vrrp.delay_reload >=0 %}
+ vrrp delay reload {{ value.vrrp.delay_reload }}
+      {% else %}
+ vrrp delay reload {{ value.vrrp.delay_reload }}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+  {% for group in value.vrrp_group %}
+    {% if group.group_id is defined and group.group_id %}
+      {% if group.state is defined and group.state == "absent" %}
+        {% if group.type is defined and group.type == "ipv6" %}
+ no vrrp-ipv6-group {{ group.group_id }}
+        {% else %}
+ no vrrp-group {{ group.group_id }}
+        {% endif %}
+      {% else %}
+        {% if group.type is defined and group.type == "ipv6" %}
+ vrrp-ipv6-group {{ group.group_id }}
+        {% else %}
+ vrrp-group {{ group.group_id }}
+        {% endif %}
+        {% if group.type is not defined or not group.type == "ipv6" %}
+          {% if group.version is defined %}
+            {% if group.version %}
+  version {{ group.version }}
+            {% else %}
+  no version
+            {% endif %}
+          {% endif %}
+        {% endif %}
+        {% if group.adv_interval_centisecs is defined %}
+          {% if group.adv_interval_centisecs %}
+            {% if group.version is not defined or (group.version is defined and group.version == 2) %}
+            {% set adv_int = group.adv_interval_centisecs/100 %}
+              {% if group.type is defined and group.type == "ipv6" %}
+  advertise-interval centisecs {{ group.adv_interval_centisecs }}
+              {% else %}
+  advertise-interval {{ adv_int|int }}
+              {% endif %}
+            {% else %}
+  advertise-interval centisecs {{ group.adv_interval_centisecs }}
+            {% endif %}
+          {% else %}
+  no advertise-interval
+          {% endif %}
+        {% endif %}
+        {% if group.hold_time_centisecs is defined %}
+          {% if group.hold_time_centisecs >= 0 %}
+            {% if group.version is not defined or (group.version is defined and group.version == 2) %}
+            {% set hold_time = group.hold_time_centisecs/100 %}
+              {% if group.type is defined and group.type == "ipv6" %}
+  hold-time centisecs {{ group.hold_time_centisecs }}
+              {% else %}
+  hold-time {{ hold_time|int }}
+              {% endif %}
+            {% else %}
+  hold-time centisecs {{ group.hold_time_centisecs }}
+            {% endif %}
+          {% else %}
+  no hold-time
+          {% endif %}
+        {% endif %}
+        {% if group.track_interface_state is defined and group.track_interface_state == "absent" %}
+  no track
+        {% else %}
+          {% if group.track_interface is defined and group.track_interface %}
+            {% for track_item in group.track_interface %}
+              {% if track_item.state is defined and track_item.state == "absent" %}
+                {% if track_item.resource_id is defined and track_item.resource_id %}
+  no track {{ track_item.resource_id }} 
+                {% elif track_item.interface is defined and track_item.interface %}
+  no track {{ track_item.interface }}
+                {% endif %}
+              {% else %}
+                {% if track_item.resource_id is defined and track_item.resource_id %}
+                  {% if track_item.priority_cost is defined and track_item.priority_cost %}
+  track {{ track_item.resource_id }} priority-cost {{ track_item.priority_cost }}
+                  {% else %}
+  track {{ track_item.resource_id }}
+                  {% endif %}
+                {% elif track_item.interface is defined and track_item.interface %}
+                  {% if track_item.priority_cost is defined and track_item.priority_cost %}
+  track {{ track_item.interface }} priority-cost {{ track_item.priority_cost }}
+                  {% else %}
+  track {{ track_item.interface }}
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        {% endif %}
+        {% if group.type is not defined or not group.type == "ipv6" %}
+          {% if group.authentication is defined and group.authentication %}
+            {% if group.authentication.state is defined and group.authentication.state == "absent" %}
+  no authentication-type
+            {% else %}
+              {% if group.authentication.key is defined %}
+                {% if group.version is not defined or (group.version is defined and group.version == 2) %}
+                  {% if group.authentication.key == 0 or group.authentication.key == 7 %}
+                    {% if group.authentication.key_string is defined and group.authentication.key_string %}
+  authentication-type simple {{ group.authentication.key }} {{ group.authentication.key_string }}
+                    {% endif %}
+                  {% elif group.authentication.key %}
+  authentication-type simple {{ group.authentication.key }}
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+        {% if group.virtual_address is defined %}
+          {% if group.virtual_address %}
+  virtual-address {{ group.virtual_address }}
+          {% else %}
+  no virtual-address
+          {% endif %}
+        {% endif %}
+        {% if group.description is defined %}
+          {% if group.description %}
+  description {{ group.description }}
+          {% else %}
+  no description
+          {% endif %}
+        {% endif %}
+        {% if group.preempt is defined %}
+          {% if group.preempt %}
+  preempt
+          {% else %}
+  no preempt
+          {% endif %}
+        {% endif %}
+        {% if group.enable is defined %}
+          {% if group.enable %}
+  no disable
+          {% else %}
+  disable
+          {% endif %}
+        {% endif %}
+        {% if group.priority is defined %}
+          {% if group.priority %}
+  priority {{ group.priority }}
+          {% else %}
+  no priority 
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+  {% endif %}
+{% endfor %}
+{% endif %}

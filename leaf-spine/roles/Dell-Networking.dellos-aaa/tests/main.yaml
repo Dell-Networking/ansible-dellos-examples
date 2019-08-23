@@ -1,0 +1,153 @@
+---
+# vars file for Dell-Networking.dellos-aaa, below gives a sample configuration
+
+# Sample variables for dellos9 device
+
+dellos_aaa:
+    radius_server:
+        key: radius
+        retransmit: 5
+        timeout: 40
+        deadtime: 2300
+        group:
+          - name: RADIUS
+            host:
+              - ip: 2001:4898:f0:f09b::1002
+                key: 0
+                key_string: aaaa
+                retransmit: 5
+                auth_port: 3
+                timeout: 2
+                state: present
+            vrf:
+              vrf_name: test
+              source_intf: fortyGigE 1/2
+              state: absent
+            state: present
+        host:
+          - ip: 10.1.1.1
+            key: 0
+            key_string: aaa
+            retransmit: 6
+            auth_port: 3
+            timeout: 2
+            state: present
+    tacacs_server:
+        key: 7
+        key_string: 9ea8ec421c2e2e5bec757f44205015f6d81e83a4f0aa52fa
+        group:
+          - name: TACACS
+            host:
+              - ip: 2001:4898:f0:f09b::1000
+                key: 0
+                key_string: aaa
+                auth_port: 3
+                timeout: 2
+                state: present
+            vrf:
+              vrf_name: tes
+              source_intf: fortyGigE 1/3
+              state: present
+            state: present
+        host:
+          - ip: 2001:4898:f0:f09b::1000
+            key: 0
+            key_string: aaa
+            auth_port: 3
+            timeout: 2
+            state: present
+    aaa_accounting:
+        commands:
+            - enable_level: 2
+              accounting_list_name: aa
+              record_option: start-stop
+              state: present
+            - role_name: netadmin
+              accounting_list_name: aa
+              no_accounting: none
+        suppress: True
+        exec:
+            - accounting_list_name: aaa
+              no_accounting: true
+              state: present
+        dot1x: none
+        rest: none
+    aaa_authorization:
+        commands:
+            - enable_level: 2
+              authorization_list_name: aa
+              use_data: local
+              state: present
+            - role_name: netadmin
+              authorization_list_name: aa
+              authorization_method: none
+              use_data: local
+        config_commands: True
+        role_only:
+        exec:
+            - authorization_list_name: aaa
+              authorization_method: if-authenticated
+              use_data: local
+              state: present
+    line_terminal:
+      vty 0:
+        authorization:
+          commands:
+             - enable_level: 2
+               authorization_list_name: aa
+               state: present
+             - role_name: netadmin
+               authorization_list_name: aa
+               state: present
+          exec:
+             - authorization_list_name: aa
+               state: present
+        accounting:
+          commands:
+             - enable_level: 2
+               accounting_list_name: aa
+               state: present
+             - role_name: netadmin
+               accounting_list_name: aa
+               state: absent
+          exec:
+             accounting_list_name: aa
+             state: present
+        authentication:
+          enable:
+          login: console
+    aaa_radius:
+      group: RADIUS
+      auth_method: pap
+    aaa_tacacs:
+      group: TACACS
+    aaa_authentication:
+        auth_list:
+          - name: default
+            login_or_enable: login
+            server: tacacs+
+            use_password: local
+            state: present
+          - name: console
+            server: radius
+            login_or_enable: login
+            use_password: local
+
+# Sample vars for dellos10 device
+
+dellos_aaa:
+  radius_server:
+        retransmit: 5
+        timeout: 10
+        host:
+          - ip: 2001:4898:f0:f09b::1001
+            key: 0
+            auth_port: 3
+            state: present
+  aaa_authentication:
+        local_auth:
+          radius: true
+        radius_auth:
+          local: true
+        re_authenticate: true
+

@@ -1,0 +1,30 @@
+---
+   - block:
+      - name: "process image {{ dellos_image_upgrade.operation_type }} operation"
+        vars:
+          command_postfix: "{{ dellos_image_upgrade.operation_type }} {{ '' if dellos_image_upgrade.operation_type == 'cancel' else dellos_image_upgrade.software_image_url }}"
+        dellos10_command:
+          commands:
+            - command: "image {{ command_postfix }}"
+              prompt: "yes/no]:"
+              answer: "yes"
+        register: result
+      - name: "Wait for image {{ dellos_image_upgrade.operation_type }} operation"
+        dellos10_command:
+          commands: "show image status"
+        register: result
+        until: result.stdout.0.find("In progress") < 1
+        retries: "{{ dellos_image_upgrade.number_of_retries }}"
+        delay: 15
+      - name: "Wait for image {{ dellos_image_upgrade.operation_type }} operation"
+        dellos10_command:
+          commands: "show image status"
+        register: image_status
+      - name: "validate software version"
+        fail: msg="Image {{ dellos_image_upgrade.operation_type }} operation Failed"
+        when: image_status.stdout.0.find("Failed") > 1 
+      - name: "Image {{ dellos_image_upgrade.operation_type }} status"
+        debug: msg="Image {{ dellos_image_upgrade.operation_type }} successful"
+        when: image_status.stdout.0.find("Failed") <= -1
+     when:
+       - dellos_image_upgrade.operation_type == "install"

@@ -1,0 +1,76 @@
+---
+
+- hosts: datacenter
+  gather_facts: no
+  connection: network_cli
+  vars:
+      dellos_interface: "{{ interfaces_breakout | default({}) }}"
+  roles:
+        - Dell-Networking.dellos-interface
+
+- hosts: exchange
+  gather_facts: no
+  connection: network_cli
+  tasks:
+     - name: Handle prompt for ip ftp vrf management
+       dellos10_config:
+         commands:
+           - command: ip ftp vrf management
+             prompt: '\[yes/no\(default\)\]:\s?$'
+             answer: "yes"
+
+- hosts: datacenter
+  gather_facts: no
+  connection: network_cli
+  vars:
+      dellos_interface: "{{ interfaces | default({}) }}"
+  pre_tasks:
+        - include: base.yaml
+        - name: Handle prompt for eula-consent support-assist reject
+          dellos10_config:
+            commands:
+              - command: eula-consent support-assist reject
+                prompt: '\[yes/no\(default\)\]:\s?$'
+                answer: "yes"
+        - name: Handle prompt for ntp enable vrf management
+          dellos10_config:
+            commands:
+              - command: ntp enable vrf management
+                prompt: '\[yes/no\(default\)\]:\s?$'
+                answer: "yes"
+        - name: Handle prompt for ip sftp vrf management
+          dellos10_config:
+            commands:
+              - command: ip sftp vrf management
+                prompt: '\[yes/no\(default\)\]:\s?$'
+                answer: "yes"
+        - name: Handle prompt for ip scp vrf management
+          dellos10_config:
+            commands:
+              - command: ip scp vrf management
+                prompt: '\[yes/no\(default\)\]:\s?$'
+                answer: "yes"
+        - name: Handle prompt for ip ssh server vrf management
+          dellos10_config:
+            commands:
+              - command: ip ssh server vrf management
+                prompt: '\[yes/no\(default\)\]:\s?$'
+                answer: "yes"
+  roles:
+        - Dell-Networking.dellos-system
+#        - Dell-Networking.dellos-users
+        - Dell-Networking.dellos-ntp
+        - Dell-Networking.dellos-xstp
+        - Dell-Networking.dellos-aaa
+        - Dell-Networking.dellos-acl
+        - Dell-Networking.dellos-qos
+        - Dell-Networking.dellos-interface
+        - Dell-Networking.dellos-vlan
+        - Dell-Networking.dellos-vlt
+        - Dell-Networking.dellos-vrrp
+        - Dell-Networking.dellos-lag
+        - Dell-Networking.dellos-bgp
+        - Dell-Networking.dellos-snmp
+        - Dell-Networking.dellos-route-map
+        - Dell-Networking.dellos-prefix-list
+        - Dell-Networking.dellos-verify-bgp

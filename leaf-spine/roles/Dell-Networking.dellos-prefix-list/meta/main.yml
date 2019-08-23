@@ -1,0 +1,17 @@
+# Copyright (c) 2017 Dell Inc.
+---
+galaxy_info:
+  author: Dell EMC Networking Engineering 
+  description: The dellos-prefix-list role facilitates the configuration of prefix list attributes in devices running Dell EMC Networking Operating Systems. 
+  license:  Apache 2.0
+  min_ansible_version: 2.2
+
+  platforms:
+  - name: Dell OS9
+
+  galaxy_tags:
+    - Networking
+    - Dell 
+    - EMC
+    - OS9
+    - DellEMC

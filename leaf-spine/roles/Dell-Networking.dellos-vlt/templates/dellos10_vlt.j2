@@ -1,0 +1,66 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{################################
+
+Purpose:
+Configure VLT commands fon dellos10 Devices.
+
+dellos_vlt:
+   domain: 1
+   discovery_intf: 1/1/12
+   discovery_intf_state: present
+   peer_routing: True
+   vlt_mac: aa:aa:aa:aa:aa:aa
+   vlt_peers:
+     Po 12:
+      peer_lag: 13
+   state: present
+
+################################}
+{% if dellos_vlt is defined and dellos_vlt %}
+  {% if dellos_vlt.domain is defined and dellos_vlt.domain %}
+    {% if dellos_vlt.state is defined and dellos_vlt.state == 'absent'  %}
+no vlt-domain {{ dellos_vlt.domain }}
+    {% else %}
+vlt-domain {{ dellos_vlt.domain }}
+    {% if dellos_vlt.discovery_intf_state is defined and dellos_vlt.discovery_intf_state == "absent" %}
+      {% if dellos_vlt.discovery_intf is defined and dellos_vlt.discovery_intf %}
+ no discovery-interface ethernet{{ dellos_vlt.discovery_intf }}
+      {% endif %}
+    {% else %}
+      {% if dellos_vlt.discovery_intf is defined and dellos_vlt.discovery_intf %}
+ discovery-interface ethernet{{ dellos_vlt.discovery_intf }}
+      {% endif %}
+    {% endif %}
+    {% if dellos_vlt.peer_routing is defined %}
+      {% if dellos_vlt.peer_routing %}
+ peer-routing
+      {% else %}
+ no peer-routing
+      {% endif %}
+    {% endif %}
+    {% if dellos_vlt.vlt_mac is defined %}
+      {% if dellos_vlt.vlt_mac %}
+ vlt-mac {{ dellos_vlt.vlt_mac }}
+      {% else %}
+ no vlt-mac
+      {% endif %}
+    {% endif %}
+
+    {% endif %}
+  {% endif %}
+  {% if dellos_vlt.vlt_peers is defined and  dellos_vlt.vlt_peers %}
+    {% for key in dellos_vlt.vlt_peers.keys() %}
+      {% set channel_id = key.split(" ") %}
+      {% set peer_vars = dellos_vlt.vlt_peers[key] %}
+interface port-channel{{ channel_id[1] }}
+      {% if peer_vars.peer_lag is defined %}
+        {% if peer_vars.peer_lag %}
+ vlt-port-channel {{ peer_vars.peer_lag}}
+        {% else %}
+ no vlt-port-channel
+        {% endif %}
+      {% endif %}
+
+    {% endfor %}
+  {% endif %}
+{% endif %}

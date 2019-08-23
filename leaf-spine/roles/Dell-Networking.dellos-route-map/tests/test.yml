@@ -1,0 +1,5 @@
+---
+- hosts: localhost
+  connection: network_cli
+  roles:
+    - Dell-Networking.dellos-route-map

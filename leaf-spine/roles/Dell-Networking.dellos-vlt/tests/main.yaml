@@ -1,0 +1,54 @@
+---
+# vars file for Dell-Networking.dellos-vlt, below gives a example configuration
+
+# Sample variables for dellos9 device
+dellos_vlt:
+    domain: 3
+    backup_destination: 1.1.1.1
+    destination_type: ipv4
+    backup_destination_vrf: test
+    priority: 1
+    VLTi: 100 
+    peer_routing: True
+    peer_routing_timeout: 200
+    multicast_peer_routing_timeout: 250
+    system_mac: aa:aa:aa:aa:aa:aa
+    delay_restore: 100
+    delay_restore_abort_threshold: 110
+    proxy_gateway:
+      static:
+        remote_mac:
+          - address: aa:aa:aa:aa:aa:aa
+            exclude_vlan_range: 2
+            state: present
+        proxy_static_state: present
+      lldp:
+        vlt_peer_mac: true
+        peer_timeout: 20
+        peer_domain_link:
+           - port_channel_id: 10
+             exclude_vlan_range: 3
+             state: present
+        proxy_lldp_state: present
+    vlt_peers:
+      Po 12:
+       peer_lag: 13
+      Po 10:
+       peer_lag: 14
+    unit_id: 1
+    state: present
+
+# Sample variables for dellos10 device
+dellos_vlt:
+    domain: 1
+    discovery_intf: 1/1/12
+    discovery_intf_state: present
+    peer_routing: True
+    vlt_mac: aa:aa:aa:aa:aa:aa
+    vlt_peers:
+      Po 12:
+       peer_lag: 13
+    state: present
+
+
+

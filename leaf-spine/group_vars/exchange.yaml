@@ -1,0 +1,317 @@
+---
+
+is_exchange: True
+bfd_multiplier: 3
+
+exchange_system:
+  hash_algo:
+      algo:
+        - name: ecmp
+          mode: "{{ hash_alg_ecmp_mode }}"
+
+dellos_system: "{{ all_system | combine(exchange_system) }}" 
+
+port_group:
+  - port_group_id: 1/1/18
+    port_mode: 
+      - interface: 1/1/35
+        breakout_mode: 40g-1x
+      - interface: 1/1/36
+        breakout_mode: 40g-1x
+
+dellos_xstp:
+    enable: False
+
+dellos_route_map:
+  route_map:
+    - name:  ScaleIO
+      permit: true
+      seq_num: 10
+      match:
+       - ip_type: ipv4
+         prefix_list: ScaleIO
+
+dellos_prefixlist:
+   - name: ScaleIO
+     type: ipv4
+     entries:
+       - number: 10
+         permit: true
+         net_num: 172.21.61.0
+         mask: 24
+         state: present
+       - number: 15
+         permit: true
+         net_num: 172.21.66.0
+         mask: 24
+         state: present
+       - number: 20
+         permit: true
+         net_num: "{{ prefix_list_net_num_1 }}"
+         mask: 32
+         state: present
+     state: present
+
+dellos_bgp:
+    asn: "{{ bgp_exchange_asn }}"
+    best_path:
+       as_path: multipath-relax
+    bfd: True
+    ipv4_network:
+       - address: "{{ loopback0_ip }}"
+         state: present
+    neighbor:
+      - ip: "{{ bgp_neigh_spine_ip_1 }}"
+        type: ipv4
+        remote_asn: "{{ bgp_spine_asn }}"
+        admin: up
+      - ip: "{{ bgp_neigh_spine_ip_2 }}"
+        type: ipv4
+        remote_asn: "{{ bgp_spine_asn }}"
+        admin: up
+      - ip: "{{ bgp_neigh_spine_ip_3 }}"
+        type: ipv4
+        remote_asn: "{{ bgp_spine_asn }}"
+        admin: up
+      - ip: "{{ bgp_neigh_spine_ip_4 }}"
+        type: ipv4
+        remote_asn: "{{ bgp_spine_asn }}"
+        admin: up
+
+      - ip: "{{ bgp_neigh_cisco1_ip_1 }}"
+        type: ipv4
+        remote_asn: "{{ bgp_cisco_fabric_1_asn }}"
+        admin: up
+        address_family:
+           - type: ipv4
+             route_map:
+               - name: ScaleIO
+                 filter: out
+      - ip: "{{ bgp_neigh_cisco1_ip_2 }}"
+        type: ipv4
+        remote_asn: "{{ bgp_cisco_fabric_1_asn }}"
+        admin: up
+        address_family:
+           - type: ipv4
+             route_map:
+               - name: ScaleIO
+                 filter: out
+
+      - ip: "{{ bgp_neigh_cisco2_ip_1 }}"
+        type: ipv4
+        bfd: True
+        remote_asn: "{{ bgp_cisco_fabric_2_asn }}"
+        admin: up
+        address_family:
+           - type: ipv4
+             route_map:
+               - name: ScaleIO
+                 filter: out
+      - ip: "{{ bgp_neigh_cisco2_ip_2 }}"
+        type: ipv4
+        bfd: True
+        remote_asn: "{{ bgp_cisco_fabric_2_asn }}"
+        admin: up
+        address_family:
+           - type: ipv4
+             route_map:
+               - name: ScaleIO
+                 filter: out
+
+      - ip: "{{ bgp_neigh_3tier_ip_1 }}"
+        type: ipv4
+        bfd: True
+        remote_asn: "{{ 3tier_fabric_switch_asn }}"
+        admin: up
+        address_family:
+           - type: ipv4
+             route_map:
+               - name: ScaleIO
+                 filter: out
+      - ip: "{{ bgp_neigh_3tier_ip_2 }}"
+        type: ipv4
+        bfd: True
+        remote_asn: "{{ 3tier_fabric_switch_asn }}"
+        admin: up
+        address_family:
+           - type: ipv4
+             route_map:
+               - name: ScaleIO
+                 filter: out
+
+interfaces:
+    loopback 0:
+            admin: up
+            ip_and_mask: "{{ loopback0_ip }}"
+    ethernet 1/1/1:
+            desc: ToScaleIOPod1
+            admin: up
+            mtu: '{{ mtu }}'
+            switchport: False
+            ip_and_mask: "{{ intf_1_ip }}"
+    ethernet 1/1/2:
+            desc: ToScaleIOPod1
+            admin: up
+            mtu: '{{ mtu }}'
+            switchport: False
+            ip_and_mask: "{{ intf_2_ip }}"
+    ethernet 1/1/3:
+            desc: ToScaleIOPod1
+            admin: up
+            mtu: '{{ mtu }}'
+            switchport: False
+            ip_and_mask: "{{ intf_3_ip }}"
+    ethernet 1/1/4:
+            desc: ToScaleIOPod1
+            admin: up
+            mtu: '{{ mtu }}'
+            switchport: False
+            ip_and_mask: "{{ intf_4_ip }}"
+    ethernet 1/1/5:
+            admin: up
+    ethernet 1/1/6:
+            admin: up
+    ethernet 1/1/7:
+            admin: up
+    ethernet 1/1/8:
+            admin: up
+    ethernet 1/1/9:
+            admin: up
+    ethernet 1/1/10:
+            admin: up
+    ethernet 1/1/11:
+            admin: up
+    ethernet 1/1/12:
+            admin: up
+    ethernet 1/1/13:
+            admin: up
+    ethernet 1/1/14:
+            admin: up
+    ethernet 1/1/15:
+            admin: up
+    ethernet 1/1/16:
+            admin: up
+    ethernet 1/1/17:
+            admin: up
+    ethernet 1/1/18:
+            admin: up
+    ethernet 1/1/19:
+            admin: up
+    ethernet 1/1/20:
+            admin: up
+    ethernet 1/1/21:
+            admin: up
+    ethernet 1/1/22:
+            admin: up
+    ethernet 1/1/23:
+            admin: up
+    ethernet 1/1/24:
+            admin: up
+    ethernet 1/1/25:
+            admin: up
+    ethernet 1/1/26:
+            admin: up
+    ethernet 1/1/27:
+            admin: up
+    ethernet 1/1/28:
+            admin: up
+    ethernet 1/1/29:
+            admin: up
+    ethernet 1/1/30:
+            desc: ToCiscoFabric1
+            admin: up
+            mtu: '{{ mtu }}'
+            switchport: False
+            ip_and_mask: "{{ intf_30_ip }}"
+    ethernet 1/1/31:
+            desc: ToCiscoFabric1
+            admin: up
+            mtu: '{{ mtu }}'
+            switchport: False
+            ip_and_mask: "{{ intf_31_ip }}"
+    ethernet 1/1/32:
+            desc: ToCiscoFabric2
+            admin: up
+            mtu: '{{ mtu }}'
+            switchport: False
+            ip_and_mask: "{{ intf_32_ip }}"
+    ethernet 1/1/33:
+            desc: ToCiscoFabric2
+            admin: up
+            mtu: '{{ mtu }}'
+            switchport: False
+            ip_and_mask: "{{ intf_33_ip }}"
+    ethernet 1/1/34:
+            admin: up
+    ethernet 1/1/35:1:
+            desc: To-3Tier-Fabric-switch-a
+            admin: up
+            mtu: '{{ mtu }}'
+            switchport: False
+            ip_and_mask: "{{ intf_35_1_ip }}"
+    ethernet 1/1/36:1:
+            desc: To-3Tier-Fabric-switch-a
+            admin: up
+            mtu: '{{ mtu }}'
+            switchport: False
+            ip_and_mask: "{{ intf_36_1_ip }}"
+    ethernet 1/1/37:
+            admin: up
+    ethernet 1/1/38:
+            admin: up
+    ethernet 1/1/39:
+            admin: up
+    ethernet 1/1/40:
+            admin: up
+    ethernet 1/1/41:
+            admin: up
+    ethernet 1/1/42:
+            admin: up
+    ethernet 1/1/43:
+            admin: up
+    ethernet 1/1/44:
+            admin: up
+    ethernet 1/1/45:
+            admin: up
+    ethernet 1/1/46:
+            admin: up
+    ethernet 1/1/47:
+            admin: up
+    ethernet 1/1/48:
+            admin: up
+    ethernet 1/1/49:
+            admin: up
+    ethernet 1/1/50:
+            admin: up
+    ethernet 1/1/51:
+            admin: up
+    ethernet 1/1/52:
+            admin: up
+    ethernet 1/1/53:
+            admin: up
+    ethernet 1/1/54:
+            admin: up
+    ethernet 1/1/55:
+            admin: up
+    ethernet 1/1/56:
+            admin: up
+    ethernet 1/1/57:
+            admin: up
+    ethernet 1/1/58:
+            admin: up
+    ethernet 1/1/59:
+            admin: up
+    ethernet 1/1/60:
+            admin: up
+    ethernet 1/1/61:
+            admin: up
+    ethernet 1/1/62:
+            admin: up
+    ethernet 1/1/63:
+            admin: up
+    ethernet 1/1/64:
+            admin: up
+    ethernet 1/1/65:
+            admin: up
+    ethernet 1/1/66:
+            admin: up

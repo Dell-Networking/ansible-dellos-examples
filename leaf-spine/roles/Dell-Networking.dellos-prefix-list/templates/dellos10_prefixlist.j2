@@ -1,0 +1,98 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{####################################
+
+Purpose:
+Configure pl on OS10 devices
+
+dellos_prefixlist:
+   - name: testpl
+     type: ipv4
+     description: pl
+     entries:
+       - number: 19
+         permit: true
+         net_num: 20.0.0.0
+         mask: 16
+         condition_list:
+           - condition: ge
+             prelen: 17
+           - condition: le
+             prelen: 18
+         state: present
+     state: present
+
+#####################################}
+{% if (dellos_prefixlist is defined and dellos_prefixlist) %}
+  {% for val in dellos_prefixlist %}
+    {% if val.name is defined and val.name %}
+      {% if val.state is defined and val.state == "absent" %}
+        {% if val.type is defined and val.type == "ipv4" %}
+no ip prefix-list {{ val.name }}
+        {% elif val.type is defined and val.type == "ipv6" %}
+no ipv6 prefix-list {{ val.name }}
+        {% endif %}
+      {% else %}
+        {% if val.type is defined and val.type == "ipv4" %}
+        {% set ip = "ip" %}
+        {% elif val.type is defined and val.type == "ipv6" %}
+        {% set ip = "ipv6" %}
+        {% endif %}
+        {% if val.description is defined %}
+          {% if val.description %}
+{{ ip }} prefix-list {{ val.name }} description {{ val.description }}
+          {% else %}
+no {{ ip }} prefix-list {{ val.name }} description {{ val.description }}
+          {% endif %}
+        {% endif %}
+        {% if val.entries is defined and val.entries %}
+          {% for rule in val.entries %}
+            {% if rule.number is defined and rule.number %}
+              {% if rule.state is defined %}
+                {% if rule.state == "absent" %}
+no {{ ip }} prefix-list  {{ val.name }} seq {{ rule.number }}
+                {% else %}
+                  {% if rule.permit is defined %}
+                    {% if rule.permit %}
+                    {% set is_permit = "permit" %}
+                    {% else %}
+                    {% set is_permit = "deny" %}
+                    {% endif %}
+	          {% endif %}
+	   	  {% if rule.net_num is defined and rule.net_num %}
+         	    {% if rule.mask is defined %}
+                      {% if rule.mask or rule.mask == 0 %}
+                        {% if rule.condition_list is defined and rule.condition_list %}
+                        {% set condition_string = [' '] %}
+                        {% set item = "" %}
+                          {% if rule.condition_list | length > 1 %}
+                            {% for condition in rule.condition_list %}
+                              {% if rule.condition_list[0].condition == "ge" and rule.condition_list[1].condition == "le" %}
+                              {% set item = condition_string[0] + condition.condition + ' ' + condition.prelen|string + ' ' %}
+                              {% endif %}
+                              {% if condition_string.insert(0,item) %} {% endif %}
+                            {% endfor %}
+                          {% else %}
+                            {% for condition in rule.condition_list %}
+                              {% if rule.condition_list[0].condition == "ge" or rule.condition_list[0].condition == "le" %}
+                              {% set item = condition_string[0] + condition.condition + ' ' + condition.prelen|string + ' '
+%}
+                              {% endif %}
+                              {% if condition_string.insert(0,item) %} {% endif %}
+                            {% endfor %}
+                          {% endif %}
+{{ ip }} prefix-list {{ val.name }} seq {{ rule.number }} {{ is_permit }} {{ rule.net_num }}/{{ rule.mask }}{{ condition_string[0] }} 
+                        {% else %}
+{{ ip }} prefix-list {{ val.name }} seq {{ rule.number}} {{ is_permit }} {{ rule.net_num }}/{{ rule.mask }}
+                        {% endif %}
+                      {% endif %}
+  		    {% endif %}
+                  {% endif %}
+		{% endif %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+{% endif %}

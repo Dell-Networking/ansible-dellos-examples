@@ -1,0 +1,37 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{####################################
+
+Purpose:
+Configure users commands for dellos6 Devices
+
+dellos_users:
+      - username: test
+        password: test
+        privilege: 0
+        state: absent
+
+#####################################}
+{% if dellos_users is defined and dellos_users %}
+
+{% for item in dellos_users %}
+  {% if item.username is defined %}
+    {% if item.state is defined and item.state == "absent" %}
+no username {{ item.username }}
+    {% else %}
+      {% if item.password is defined and item.password %}
+        {% if item.privilege is defined and item.privilege %}
+username {{ item.username }} password {{ item.password }} privilege {{ item.privilege }}
+        {% else %}
+username {{ item.username }} password {{ item.password }} 
+        {% endif %}
+      {% elif not item.password %}
+        {% if item.privilege is defined and item.privilege %}
+username {{ item.username }} nopassword privilege {{ item.privilege }}
+        {% else %}
+username {{ item.username }} nopassword
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+{% endif %}

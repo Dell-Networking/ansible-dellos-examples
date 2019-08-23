@@ -1,0 +1,44 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{#############################################
+
+Purpose:
+Configure NTP commands for dellos9 Devices
+
+dellos_ntp:
+      server:
+        - ip: 2.2.2.2
+          vrf:
+            - test
+            - management
+          state: present
+###################################################}
+{% if dellos_ntp is defined and dellos_ntp %}
+
+{% for key,value in dellos_ntp.iteritems() %}
+  {% if key == "server" and value %}
+    {% for item in value %}
+      {% if item.ip is defined and item.ip %}
+        {% if item.state is defined and item.state == "absent" %}
+          {% if item.vrf is defined and item.vrf %}
+            {% for vrf_name in item.vrf %}
+no ntp server vrf {{ vrf_name }} {{ item.ip }}
+            {% endfor %}
+          {% else %}
+no ntp server {{ item.ip }}
+          {% endif %}
+        {% else %}
+          {% if item.vrf is defined and item.vrf %}
+            {% for vrf_name in item.vrf %}
+ntp server vrf {{ vrf_name }} {{ item.ip }}
+            {% endfor %}
+          {% else %}
+ntp server {{ item.ip }}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+{% endfor %}
+{% endif %}
+

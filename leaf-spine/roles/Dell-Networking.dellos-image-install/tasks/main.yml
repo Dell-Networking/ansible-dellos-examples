@@ -1,0 +1,4 @@
+---
+# tasks file for image_install
+
+- include: img_install_onie.yml

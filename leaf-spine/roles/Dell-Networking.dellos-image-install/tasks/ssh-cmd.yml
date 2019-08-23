@@ -1,0 +1,15 @@
+---
+
+- block:
+
+  - name: SSH into the switch
+    delegate_to: localhost
+    become: no
+    expect:
+      command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@{{ansible_host}} -o BatchMode=yes
+      timeout: "{{ timeout|default(30) }}"
+      responses: "{{ exp | default({}) | combine(default_exp) | combine(extra_exp)}}"
+      echo: no
+    register: output
+    ignore_errors: yes
+#    failed_when: output.rc == 1

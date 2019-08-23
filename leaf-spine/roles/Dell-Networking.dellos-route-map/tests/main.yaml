@@ -1,0 +1,49 @@
+---
+# Sample variables for dellos10 device
+dellos_route_map:
+  as_path:
+    - access_list: aa
+      permit: true
+      regex: www
+      state: present
+  community_list:
+    - type: standard
+      name: qqq
+      permit: false
+      community: internet
+      state: present
+  extcommunity_list:
+    - type: standard
+      name: qqq
+      permit: false
+      community: "rt 22:33"
+      state: present
+  route_map:
+    - name:  test
+      permit: true
+      seq_num: 1
+      continue: 20
+      match:
+       - ip_type: ipv4
+         access_group: testaccess
+         prefix_list: testprefix
+      set:
+         local_pref: 1200
+         metric_type: internal
+         metric: + 30
+         origin: igp
+         weight: 50
+         next_hop:
+           - type: ip
+             address: 10.1.1.1
+             track_id: 3
+             state: present
+         community: internet
+         comm_list:
+           add: qq
+           delete: qqq
+         extcommunity: "22:33"
+         extcomm_list:
+           add: aa
+           delete: aa
+      state: present

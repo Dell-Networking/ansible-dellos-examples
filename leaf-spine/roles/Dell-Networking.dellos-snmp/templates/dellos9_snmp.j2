@@ -1,0 +1,528 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{#############################################
+
+Purpose:
+Configure snmp commands for dellos9 Devices
+
+dellos_snmp:
+    snmp_contact:  test
+    snmp_location: chennai
+    snmp_server_vrf: test
+    snmp_community:
+      - name: public
+        access_mode: ro
+        state: present
+      - name: private
+        access_mode: rw
+        state: present
+    snmp_context: 
+      - name: SNMP1
+        state: absent 
+    snmp_packet_size: 8
+    snmp_host:
+      - ipv4: 1.1.1.1
+        version: 3
+        security_level: auth
+        vrf:
+          - test
+          - management
+        communitystring: msft
+        udpport: 162
+        state: absent
+      - ipv6: 2001:4898:f0:f09b::2000
+        version: 1
+        state: present
+    snmp_traps: 
+      - name: config
+        state: present
+    snmp_engine_id: 1234567890
+    snmp_view:
+      - name: view_1
+        oid_subtree: 2
+        include: true
+        state: absent
+    snmp_user:
+      - name: user_1
+        group_name: grp1
+        encryption : true
+        auth_algorithm: md5
+        auth_pass: 12345678
+        version: 3
+        access_list:
+          access: a2
+          ipv6: ip1
+        state: present
+      - name: user_2
+        group_name: grp2
+        version: "2c"
+        access_list:
+          ipv6: ip1
+        state: absent
+    snmp_group:
+      - name: group_1
+        version: 2c
+        access_list:
+          access: a1
+          ipv6: ip1
+        view:
+          read: r1
+          write: w1
+          notify: n1
+        context: 
+          - context_name: c1
+            access_list:
+              access: a1
+              ipv6: ip1
+            view:
+              read: r1
+              write: w1
+              notify: n1
+            state: present
+          - context_name: c2
+            state: present
+        state: present
+      - name: group_2
+        version: 3
+        security_level: auth
+        access_list:
+          access: a1
+          ipv6: ip1
+        state: present
+
+###################################################}
+{% if dellos_snmp is defined and dellos_snmp %}
+
+{% if dellos_snmp %}
+{% for key,value in dellos_snmp.iteritems() %}
+  {% if key == "snmp_contact" %}
+    {% if value %}
+snmp-server contact {{ value }}
+    {% else %}
+no snmp-server contact
+    {% endif %}
+
+  {% elif key == "snmp_location" %}
+    {% if value  %}
+snmp-server location {{ value }}
+    {% else %}
+no snmp-server location
+    {% endif %}
+
+  {% elif key == "snmp_server_vrf" %}
+    {% if value  %}
+snmp-server vrf {{ value }}
+    {% else %}
+no snmp-server vrf
+    {% endif %}
+
+  {% elif key == "snmp_community" %}
+    {% if value %}
+      {% for item in value %}
+        {% if item.name is defined and item.name %}
+          {% if item.state is defined and item.state == "absent" %}
+no snmp-server community {{ item.name }}
+          {% else %}
+            {% if item.access_mode is defined and item.access_mode %}
+snmp-server community {{ item.name }} {{ item.access_mode }}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  
+  {% elif key == "snmp_packet_size" %}
+    {% if value  %}
+snmp-server packetsize {{ value }}
+    {% else %}
+no snmp-server packetsize
+    {% endif %}
+
+  {% elif key == "snmp_context" %}
+    {% if value  %}
+      {% for item in value %}
+        {% if item.name is defined and item.name %}
+          {% if item.state is defined and item.state == "absent" %}
+no snmp-server context {{ item.name }}
+          {% else %}
+snmp-server context {{ item.name }}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}   
+
+  {% elif key == "snmp_host" and value %}
+    {% for item in value %}
+      {% if item.version is defined and item.version == "2c" or item.version == 1 %}
+        {% set my_version = item.version|string %}
+      {% elif item.version is defined and item.version == 3 %}
+        {% if item.security_level is defined and item.security_level %}
+          {% set my_version = "3"+" "+item.security_level %}
+        {% endif %}
+      {% endif %}
+      {% if item.state is defined and item.state == "absent" %}
+        {% if item.vrf is defined and item.vrf %}
+          {% for vrf_name in item.vrf %}
+            {% if item.ipv4 is defined and item.ipv4 %}
+              {% if item.communitystring is defined and item.communitystring %}
+                {% if item.udpport is defined and item.udpport %}
+no snmp-server host {{ item.ipv4 }} vrf {{ vrf_name }} traps version {{ my_version }} {{ item.communitystring }} udp-port {{ item.udpport }}
+                {% else %}
+no snmp-server host {{ item.ipv4 }} vrf {{ vrf_name }} traps version {{ my_version }} {{ item.communitystring }}
+                {% endif %}
+              {% else %}
+no snmp-server host {{ item.ipv4 }} vrf {{ vrf_name }} traps version {{ my_version }} public udp-port 162
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          {% if item.ipv4 is defined and item.ipv4 %} 
+            {% if item.communitystring is defined and item.communitystring %}
+              {% if item.udpport is defined and item.udpport %}
+no snmp-server host {{ item.ipv4 }} traps version {{ my_version }} {{ item.communitystring }} udp-port {{ item.udpport }}
+              {% else %}
+no snmp-server host {{ item.ipv4 }} traps version {{ my_version }} {{ item.communitystring }}
+              {% endif %}
+            {% else %}
+no snmp-server host {{ item.ipv4 }} traps version {{ my_version }} public udp-port 162
+            {% endif %}
+          {% elif item.ipv6 is defined and item.ipv6 %}
+            {% if item.communitystring is defined and item.communitystring %}
+              {% if item.udpport is defined and item.udpport %}
+no snmp-server host {{ item.ipv6 }} traps version {{ my_version }} {{ item.communitystring }} udp-port {{ item.udpport }}
+              {% else %}
+no snmp-server host {{ item.ipv6 }} traps version {{ my_version }} {{ item.communitystring }}
+              {% endif %}
+            {% else %}
+no snmp-server host {{ item.ipv6 }} traps version {{ my_version }} public udp-port 162
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% else %}
+        {% if item.vrf is defined and item.vrf %}
+          {% for vrf_name in item.vrf %}
+            {% if item.ipv4 is defined and item.ipv4 %}
+              {% if item.communitystring is defined and item.communitystring %}
+                {% if item.udpport is defined and item.udpport %}
+snmp-server host {{ item.ipv4 }} vrf {{ vrf_name }} traps version {{ my_version }} {{ item.communitystring }} udp-port {{ item.udpport }}
+                {% else %}
+snmp-server host {{ item.ipv4 }} vrf {{ vrf_name }} traps version {{ my_version }} {{ item.communitystring }} udp-port 162
+                {% endif %}
+              {% else %}
+snmp-server host {{ item.ipv4 }} vrf {{ vrf_name }} traps version {{ my_version }}  public udp-port 162
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          {% if item.ipv4 is defined and item.ipv4 %}
+            {% if item.communitystring is defined and item.communitystring %}
+              {% if item.udpport is defined and item.udpport %}
+snmp-server host {{ item.ipv4 }} traps version {{ my_version }} {{ item.communitystring }} udp-port {{ item.udpport }}
+              {% else %}
+snmp-server host {{ item.ipv4 }} traps version {{ my_version }} {{ item.communitystring }} udp-port 162
+              {% endif %}
+            {% else %}
+snmp-server host {{ item.ipv4 }} traps version {{ my_version }} public udp-port 162
+            {% endif %}
+          {% elif item.ipv6 is defined and item.ipv6 %}
+            {% if item.communitystring is defined and item.communitystring %}
+              {% if item.udpport is defined and item.udpport %}
+snmp-server host {{ item.ipv6 }} traps version {{ my_version }} {{ item.communitystring }} udp-port {{ item.udpport }}
+              {% else %}
+snmp-server host {{ item.ipv6 }} traps version {{ my_version }} {{ item.communitystring }} udp-port 162
+              {% endif %}
+            {% else %}
+snmp-server host {{ item.ipv6 }} traps version {{ my_version }} public udp-port 162
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+
+  {% elif key == "snmp_traps" %}
+    {% if value %}
+      {% for val in value %}
+        {% if val.name is defined and val.name %}
+          {% if val.state is defined and val.state == "absent" %}
+            {% if val.name == "all" %}
+no snmp-server enable traps
+            {% else %}
+no snmp-server enable traps {{ val.name }}
+            {% endif %}
+          {% else %}
+            {% if val.name == "all" %}
+              {% set trap_list = ['bgp','snmp authentication coldstart linkdown linkup syslog-reachable syslog-unreachable','vrrp','lacp','entity','stack','stp','ecfm','vlt','fips','ets','xstp','isis','config','pfc','envmon cam-utilization fan supply temperature','ecmp'] %}
+              {% for name in trap_list %}
+snmp-server enable traps {{ name }}
+              {% endfor %}
+            {% else %}
+snmp-server enable traps {{ val.name }}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+  {% elif key == "snmp_engine_id" %}
+    {% if value %}
+snmp-server engineID local {{ value }}
+    {% else %}
+no snmp-server engineID local
+    {% endif %}
+
+  {% elif key == "snmp_view" %}
+    {% if value %}
+      {% for item in value %}
+        {% if item.name is defined and item.name %}
+          {% if item.oid_subtree is defined and item.oid_subtree %}
+            {% if item.state is defined and item.state == "absent" %}
+no snmp-server view {{ item.name }} {{ item.oid_subtree }}
+            {% else %}
+              {% if item.include is defined %}
+                {% if item.include %}
+snmp-server view {{ item.name }} {{ item.oid_subtree }} included
+                {% elif not item.include %}
+snmp-server view {{ item.name }} {{ item.oid_subtree }} excluded
+                {% endif %}           
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  
+  {% elif key == "snmp_user" %}
+    {% if value %}
+      {% for item in value %}
+        {% if item.name is defined and item.name %}
+          {% if item.group_name is defined and item.group_name %}
+            {% if item.version is defined and item.version == "2c" or item.version == 1 %}
+              {% if item.state is defined and item.state == "absent" %}
+no snmp-server user {{ item.name }} {{ item.group_name }} {{ item.version|string }}
+              {% else %}
+                {% if item.access_list is defined and item.access_list %}
+                  {% if item.access_list.access is defined and item.access_list.access and item.access_list.ipv6 is defined and item.access_list.ipv6 %}
+snmp-server user {{ item.name }} {{ item.group_name }} {{ item.version|string }} access {{ item.access_list.access }} ipv6 {{ item.access_list.ipv6 }}
+                  {% elif item.access_list.access is defined and item.access_list.access %}
+snmp-server user {{ item.name }} {{ item.group_name }} {{ item.version|string }} access {{ item.access_list.access }} 
+                  {% elif item.access_list.ipv6 is defined and item.access_list.ipv6 %}
+snmp-server user {{ item.name }} {{ item.group_name }} {{ item.version|string }} ipv6 {{ item.access_list.ipv6 }}
+                  {% endif %}
+                {% else %}
+snmp-server user {{ item.name }} {{ item.group_name }} {{ item.version|string }}
+                {% endif %}
+              {% endif %}
+            {% elif item.version is defined and item.version == 3 %}
+              {% if item.state is defined and item.state == "absent" %}
+no snmp-server user {{ item.name }} {{ item.group_name }} 3
+              {% else %}
+                {% if item.access_list is defined and item.access_list %}
+                  {% if item.encryption is defined and item.encryption and item.auth_algorithm is defined and item.auth_algorithm and item.auth_pass is defined and item.auth_pass and item.access_list.access is defined and item.access_list.access and item.access_list.ipv6 is defined and item.access_list.ipv6 %}
+snmp-server user {{ item.name }} {{ item.group_name }} 3 encrypted auth {{ item.auth_algorithm }} {{ item.auth_pass }} access {{ item.access_list.access }} ipv6 {{ item.access_list.ipv6 }}
+                  {% elif item.encryption is defined and item.encryption and item.auth_algorithm is defined and item.auth_algorithm and item.auth_pass is defined and item.auth_pass and item.access_list.access is defined and item.access_list.access %}
+snmp-server user {{ item.name }} {{ item.group_name }} 3 encrypted auth {{ item.auth_algorithm }} {{ item.auth_pass }} access {{ item.access_list.access }} 
+                  {% elif item.encryption is defined and item.encryption and item.auth_algorithm is defined and item.auth_algorithm and item.auth_pass is defined and item.auth_pass and item.access_list.ipv6 is defined and item.access_list.ipv6 %}
+snmp-server user {{ item.name }} {{ item.group_name }} 3 encrypted auth {{ item.auth_algorithm }} {{ item.auth_pass }} ipv6 {{ item.access_list.ipv6 }}   
+                  {% elif item.encryption is defined and item.encryption and item.auth_algorithm is defined and item.auth_algorithm and item.auth_pass is defined and item.auth_pass %}
+snmp-server user {{ item.name }} {{ item.group_name }} 3 encrypted auth {{ item.auth_algorithm }} {{ item.auth_pass }}
+                  {% elif item.auth_algorithm is defined and item.auth_algorithm and item.auth_pass is defined and item.auth_pass and item.access_list.access is defined and item.access_list.access and item.access_list.ipv6 is defined and item.access_list.ipv6 %}
+snmp-server user {{ item.name }} {{ item.group_name }} 3 auth {{ item.auth_algorithm }} {{ item.auth_pass }} access {{ item.access_list.access }} ipv6 {{ item.access_list.ipv6 }}  
+                  {% elif item.auth_algorithm is defined and item.auth_algorithm and item.auth_pass is defined and item.auth_pass and item.access_list.access is defined and item.access_list.access %}
+snmp-server user {{ item.name }} {{ item.group_name }} 3 auth {{ item.auth_algorithm }} {{ item.auth_pass }} access {{ item.access_list.access }} 
+                  {% elif item.auth_algorithm is defined and item.auth_algorithm and item.auth_pass is defined and item.auth_pass and item.access_list.ipv6 is defined and item.access_list.ipv6 %}
+snmp-server user {{ item.name }} {{ item.group_name }} 3 auth {{ item.auth_algorithm }} {{ item.auth_pass }} access {{ item.access_list.access }} ipv6 {{ item.access_list.ipv6 }}
+                  {% elif item.auth_algorithm is defined and item.auth_algorithm and item.auth_pass is defined and item.auth_pass %}
+snmp-server user {{ item.name }} {{ item.group_name }} 3 auth {{ item.auth_algorithm }} {{ item.auth_pass }}
+                  {% elif item.access_list.access is defined and item.access_list.access and item.access_list.ipv6 is defined and item.access_list.ipv6 %}
+snmp-server user {{ item.name }} {{ item.group_name }} 3 access {{ item.access_list.access }} ipv6 {{ item.access_list.ipv6 }}
+                  {% elif item.access_list.access is defined and item.access_list.access %}
+snmp-server user {{ item.name }} {{ item.group_name }} 3 access {{ item.access_list.access }}
+                  {% elif item.access_list.ipv6 is defined and item.access_list.ipv6 %}
+snmp-server user {{ item.name }} {{ item.group_name }} 3 ipv6 {{ item.access_list.ipv6 }}
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  
+  {% elif key == "snmp_group" and value %}
+    {% for item in value %}
+      {% if item.name is defined and item.name %}
+        {% if item.version is defined and item.version == "2c" or item.version == 1 %}
+          {% set my_version = item.version|string %}
+        {% elif item.version is defined and item.version == 3 %}
+          {% if item.security_level is defined and item.security_level %}
+          {% set my_version = "3"+" "+item.security_level %}
+          {% endif %}
+        {% endif %}
+        {% if item.context is defined and item.context %}
+          {% set my_entry = [] %}
+          {% for it in item.context %}
+            {% if it.context_name is defined and it.context_name %}
+              {% if it.access_list is defined and it.access_list and it.view is defined and it.view %}
+                {% if it.access_list.access is defined and it.access_list.access and it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.notify is defined and it.view.notify and it.view.read is defined and it.view.read and it.view.write is defined and it.view.write %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" ipv6 "+it.access_list.ipv6 +" notify "+it.view.notify+" read "+it.view.read+" write "+it.view.write) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access and it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.notify is defined and it.view.notify and it.view.read is defined and it.view.read %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" ipv6 "+it.access_list.ipv6 +" notify "+it.view.notify+" read "+it.view.read) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access and it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.notify is defined and it.view.notify and it.view.write is defined and it.view.write %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" ipv6 "+it.access_list.ipv6 +" notify "+it.view.notify+" write "+it.view.write) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access and it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.write is defined and it.view.write and it.view.read is defined and it.view.read %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" ipv6 "+it.access_list.ipv6 +" write "+it.view.write+" read "+it.view.read) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access and it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.notify is defined and it.view.notify %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" ipv6 "+it.access_list.ipv6 +" notify "+it.view.notify) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access and it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.read is defined and it.view.read %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" ipv6 "+it.access_list.ipv6 +" read "+it.view.read) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access and it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.write is defined and it.view.write %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" ipv6 "+it.access_list.ipv6 +" write "+it.view.write) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access and it.view.notify is defined and it.view.notify and it.view.read is defined and it.view.read and it.view.write is defined and it.view.write%}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" notify "+it.view.notify+" read "+it.view.read+" write "+it.view.write) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access and it.view.notify is defined and it.view.notify and it.view.read is defined and it.view.read %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" notify "+it.view.notify+" read "+it.view.read) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access and it.view.notify is defined and it.view.notify and it.view.write is defined and it.view.write %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" notify "+it.view.notify+" write "+it.view.write) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access and it.view.write is defined and it.view.write and it.view.read is defined and it.view.read %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" write "+it.view.write+" read "+it.view.read) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access and it.view.notify is defined and it.view.notify %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" notify "+it.view.notify) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access and it.view.read is defined and it.view.read %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" read "+it.view.read) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access and it.view.write is defined and it.view.write %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" write "+it.view.write) %}{% endif %}
+                {% elif it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.notify is defined and it.view.notify and it.view.read is defined and it.view.read and it.view.write is defined and it.view.write%}
+                  {% if my_entry.append("context "+it.context_name+" ipv6 "+it.access_list.ipv6+" notify "+it.view.notify+" read "+it.view.read+" write "+it.view.write) %}{% endif %}
+                {% elif it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.notify is defined and it.view.notify and it.view.read is defined and it.view.read %}
+                  {% if my_entry.append("context "+it.context_name+" ipv6 "+it.access_list.ipv6+" notify "+it.view.notify+" read "+it.view.read) %}{% endif %}
+                {% elif it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.notify is defined and it.view.notify and it.view.write is defined and it.view.write %}
+                  {% if my_entry.append("context "+it.context_name+" ipv6 "+it.access_list.ipv6+" notify "+it.view.notify+" write "+it.view.write) %}{% endif %}
+                {% elif it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.write is defined and it.view.write and it.view.read is defined and it.view.read %}                                                                                 {% if my_entry.append("context "+it.context_name+" ipv6 "+it.access_list.ipv6+" write "+it.view.write+" read "+it.view.read) %}{% endif %}
+                {% elif it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.notify is defined and it.view.notify %}                                                                                                                            {% if my_entry.append("context "+it.context_name+" ipv6 "+it.access_list.ipv6+" notify "+it.view.notify) %}{% endif %}
+                {% elif it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.read is defined and it.view.read %}
+                  {% if my_entry.append("context "+it.context_name+" ipv6 "+it.access_list.ipv6+"read "+it.view.read) %}{% endif %}                  
+                {% elif it.access_list.ipv6 is defined and it.access_list.ipv6 and it.view.write is defined and it.view.write %}                                                                                                                              {% if my_entry.append("context "+it.context_name+" ipv6 "+it.access_list.ipv6+" write "+it.view.write) %}{% endif %}
+                {% endif %}
+              {% elif it.access_list is defined and it.access_list %}
+                {% if it.access_list.access is defined and it.access_list.access and it.access_list.ipv6 is defined and it.access_list.ipv6 %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access+" ipv6 "+it.access_list.ipv6) %}{% endif %}
+                {% elif it.access_list.access is defined and it.access_list.access %}
+                  {% if my_entry.append("context "+it.context_name+" access "+it.access_list.access) %}{% endif %}
+                {% elif it.access_list.ipv6 is defined and it.access_list.ipv6 %}
+                  {% if my_entry.append("context "+it.context_name+" ipv6 "+it.access_list.ipv6) %}{% endif %}
+                {% endif %}
+              {% elif it.view is defined and it.view %}
+                {% if it.view.notify is defined and it.view.notify and it.view.read is defined and it.view.read and it.view.write is defined and it.view.write %}
+                  {% if my_entry.append("context "+it.context_name+" notify "+it.view.notify+" read "+it.view.read+" write "+it.view.write) %}{% endif %}
+                {% elif it.view.notify is defined and it.view.notify and it.view.read is defined and it.view.read %}
+                  {% if my_entry.append("context "+it.context_name+" notify "+it.view.notify+" read "+it.view.read) %}{% endif %}
+                {% elif it.view.notify is defined and it.view.notify and it.view.write is defined and it.view.write %}
+                  {% if my_entry.append("context "+it.context_name+" notify "+it.view.notify+" write "+it.view.write) %}{% endif %}
+                {% elif it.view.read is defined and it.view.read and it.view.write is defined and it.view.write %}
+                  {% if my_entry.append("context "+it.context_name+" read "+it.view.read+" write "+it.view.write) %}{% endif %}
+                {% elif it.view.read is defined and it.view.read %}
+                  {% if my_entry.append("context "+it.context_name+" read "+it.view.read) %}{% endif %}
+                {% elif it.view.notify is defined and it.view.notify %}
+                  {% if my_entry.append("context "+it.context_name+" notify "+it.view.notify) %}{% endif %}
+                {% elif it.view.write is defined and it.view.write %}
+                  {% if my_entry.append("context "+it.context_name+" write "+it.view.write) %}{% endif %}
+                {% endif %}
+              {% else %}
+                {% if my_entry.append("context "+it.context_name) %}{% endif %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% if item.access_list is defined and item.access_list and item.view is defined and item.view %}
+          {% if item.access_list.access is defined and item.access_list.access and item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.notify is defined and item.view.notify and item.view.read is defined and item.view.read and item.view.write is defined and item.view.write %}
+            {% set my_en = "access "+item.access_list.access+" ipv6 "+item.access_list.ipv6 +" notify "+item.view.notify+" read "+item.view.read+" write "+item.view.write %}
+          {% elif item.access_list.access is defined and item.access_list.access and item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.notify is defined and item.view.notify and item.view.read is defined and item.view.read %}
+            {% set my_en = "access "+item.access_list.access+" ipv6 "+item.access_list.ipv6 +" notify "+item.view.notify+" read "+item.view.read %}
+          {% elif item.access_list.access is defined and item.access_list.access and item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.read is defined and item.view.read and item.view.write is defined and item.view.write %}
+            {% set my_en = "access "+item.access_list.access+" ipv6 "+item.access_list.ipv6 +" read "+item.view.read+" write "+item.view.write %}
+          {% elif item.access_list.access is defined and item.access_list.access and item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.notify is defined and item.view.notify and item.view.write is defined and item.view.write %}
+            {% set my_en = "access "+item.access_list.access+" ipv6 "+item.access_list.ipv6 +" notify "+item.view.notify+" write "+item.view.write %}
+          {% elif item.access_list.access is defined and item.access_list.access and item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.notify is defined and item.view.notify %}
+            {% set my_en = "access "+item.access_list.access+" ipv6 "+item.access_list.ipv6 +" notify "+item.view.notify %}
+          {% elif item.access_list.access is defined and item.access_list.access and item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.read is defined and item.view.read %}
+            {% set my_en = "access "+item.access_list.access+" ipv6 "+item.access_list.ipv6 +" read "+item.view.read %}      
+          {% elif item.access_list.access is defined and item.access_list.access and item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.write is defined and item.view.write %}
+            {% set my_en = "access "+item.access_list.access+" ipv6 "+item.access_list.ipv6+" write "+item.view.write %}     
+          {% elif item.access_list.access is defined and item.access_list.access and item.view.notify is defined and item.view.notify and item.view.read is defined and item.view.read and item.view.write is defined and item.view.write %}
+            {% set my_en = "access "+item.access_list.access+" notify "+item.view.notify+" read "+item.view.read+" write "+item.view.write %}
+          {% elif item.access_list.access is defined and item.access_list.access and item.view.notify is defined and item.view.notify and item.view.read is defined and item.view.read %}
+            {% set my_en = "access "+item.access_list.access+" notify "+item.view.notify+" read "+item.view.read %}          {% elif item.access_list.access is defined and item.access_list.access and item.view.read is defined and item.view.read and item.view.write is defined and item.view.write %}
+            {% set my_en = "access "+item.access_list.access+" read "+item.view.read+" write "+item.view.write %}            {% elif item.access_list.access is defined and item.access_list.access and item.view.notify is defined and item.view.notify and item.view.write is defined and item.view.write %}
+            {% set my_en = "access "+item.access_list.access +" notify "+item.view.notify+" write "+item.view.write %}                                                                                  
+          {% elif item.access_list.access is defined and item.access_list.access and item.view.notify is defined and item.view.notify %}
+            {% set my_en = "access "+item.access_list.access +" notify "+item.view.notify %}
+          {% elif item.access_list.access is defined and item.access_list.access and item.view.read is defined and item.view.read %}
+            {% set my_en = "access "+item.access_list.access+" read "+item.view.read %}
+          {% elif item.access_list.access is defined and item.access_list.access and item.view.write is defined and item.view.write %}
+            {% set my_en = "access "+item.access_list.access+" write "+item.view.write %}
+          {% elif item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.notify is defined and item.view.notify and item.view.read is defined and item.view.read and item.view.write is defined and item.view.write %}
+            {% set my_en = "ipv6 "+item.access_list.ipv6+" notify "+item.view.notify+" read "+item.view.read+" write "+item.view.write %}
+          {% elif item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.notify is defined and item.view.notify and item.view.read is defined and item.view.read %}
+            {% set my_en = "ipv6 "+item.access_list.ipv6+" notify "+item.view.notify+" read "+item.view.read %}              {% elif item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.read is defined and item.view.read and item.view.write is defined and item.view.write %}
+            {% set my_en = "ipv6 "+item.access_list.ipv6+" read "+item.view.read+" write "+item.view.write %}                {% elif item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.notify is defined and item.view.notify and item.view.write is defined and item.view.write %}
+            {% set my_en = "ipv6 "+item.access_list.ipv6 +" notify "+item.view.notify+" write "+item.view.write %}
+          {% elif item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.notify is defined and item.view.notify %}
+            {% set my_en = "ipv6 "+item.access_list.ipv6 +" notify "+item.view.notify %}
+          {% elif item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.read is defined and item.view.read %}
+            {% set my_en = "ipv6 "+item.access_list.ipv6+" read "+item.view.read %}
+          {% elif item.access_list.ipv6 is defined and item.access_list.ipv6 and item.view.write is defined and item.view.write %}
+            {% set my_en = "ipv6 "+item.access_list.ipv6+" write "+item.view.write %}
+
+          {% endif %}
+        {% elif item.access_list is defined and item.access_list %}
+          {% if item.access_list.access is defined and item.access_list.access and item.access_list.ipv6 is defined and item.access_list.ipv6 %}
+            {% set my_en = "access "+item.access_list.access+" ipv6 "+item.access_list.ipv6 %}
+          {% elif item.access_list.access is defined and item.access_list.access %}
+            {% set my_en = "access "+item.access_list.access %}
+          {% elif item.access_list.ipv6 is defined and item.access_list.ipv6 %}
+            {% set my_en = "ipv6 "+item.access_list.ipv6 %}
+          {% endif %}
+        {% elif item.view is defined and item.view %}
+          {% if item.view.notify is defined and item.view.notify and item.view.read is defined and item.view.read and item.view.write is defined and item.view.write %}
+            {% set my_en = "notify "+item.view.notify+" read "+item.view.read+" write "+item.view.write %}
+          {% elif item.view.notify is defined and item.view.notify and item.view.read is defined and item.view.read %}
+            {% set my_en = "notify "+item.view.notify+" read "+item.view.read %}
+          {% elif item.view.notify is defined and item.view.notify and item.view.write is defined and item.view.write %}
+             {% set my_en ="notify "+item.view.notify+" write "+item.view.write %}         
+          {% elif item.view.read is defined and item.view.read and item.view.write is defined and item.view.write %}
+             {% set my_en = "read "+item.view.read+" write "+item.view.write %}
+          {% elif item.view.read is defined and item.view.read %}
+             {% set my_en = "read "+item.view.read %}
+          {% elif item.view.notify is defined and item.view.notify %}
+             {% set my_en = "notify "+item.view.notify %}
+          {% elif item.view.write is defined and item.view.write %}
+             {% set my_en = "write "+item.view.write %}
+          {% endif %}
+        {% endif %}
+        {% if item.state is defined and item.state == "absent" %}
+no snmp-server group {{ item.name }} {{ my_version }} 
+        {% else %}
+          {% if my_en is defined and my_en %}
+snmp-server group {{ item.name }} {{ my_version }} {{ my_en }}
+          {% else %}
+snmp-server group {{ item.name }} {{ my_version }} 
+          {% endif %}
+        {% endif %}
+        {% set my_en = "" %}
+        {% if item.context is defined %}
+          {% set i = 0 %}
+          {% for it in item.context %}
+            {% if it.state is defined and it.state == "absent" %}
+no snmp-server group {{ item.name }} {{ my_version }} context {{ it.context_name }}
+            {% else %}
+snmp-server group {{ item.name }} {{ my_version }} {{ my_entry[i] }}
+            {% endif %}
+            {% set i = i+1 %}   
+          {% endfor %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+{% endif %}
+{% endif %}
+

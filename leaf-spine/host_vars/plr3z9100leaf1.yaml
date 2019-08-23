@@ -1,0 +1,36 @@
+---
+
+vlan100_ip: 172.21.61.45/24
+vlan200_ip: 172.21.66.45/24
+
+tacacs_server_host_key_value: 43e8101f56ba482af0104f3ea6adddd5d91ac50176bec584565ada9cc53aecbe
+
+vlt_backup_destination: 172.21.62.176
+vlt_primary_priority: 1
+vlt_mac: 00:00:00:00:00:04
+
+port_channel_id_1: 100
+
+addtl_vlt_peers:
+   port-channel 100:
+      peer_lag: 100
+
+addtl_interfaces:
+   port-channel 100:
+      desc: "To-Spines"
+      admin: up
+      mtu: "{{ mtu }}"
+
+addtl_lag:
+  port-channel 100:
+     type: dynamic
+     channel_members:
+       - port: ethernet 1/1/9
+         mode: "active"
+       - port: ethernet 1/1/12
+         mode: "active"
+
+addtl_xstp:
+   rstp:
+      bridge_priority: 4096
+

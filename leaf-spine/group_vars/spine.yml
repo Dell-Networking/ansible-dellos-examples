@@ -1,0 +1,445 @@
+---
+
+is_spine: True
+
+vlan100_vrrp_1_virtual_ip: 172.21.61.1
+vlan200_vrrp_1_virtual_ip: 172.21.66.1
+vlan100_desc: "data-network-vlan-gateway"
+vlan200_desc: "data-network-vlan-gateway2"
+
+spine_system:
+  hash_algo:
+      algo:
+        - name: lag
+          mode: "{{ hash_alg_lag_mode }}"
+        - name: ecmp
+          mode: "{{ hash_alg_ecmp_mode }}"
+
+dellos_system: "{{ all_system | combine(spine_system) }}" 
+
+spine_vlt:
+  peer_routing: true
+  vlt_peers: 
+    port-channel 100:
+      peer_lag: 100
+    port-channel 101:
+      peer_lag: 101
+    port-channel 102:
+      peer_lag: 102
+
+dellos_vlt: "{{ all_vlt | combine(spine_vlt) }}"
+
+link_bundle_monitor:
+   - port-channel 100
+   - port-channel 101
+   - port-channel 102
+
+dellos_xstp:
+    type: rstp
+
+dellos_vlan:
+  vlan 100:
+      tagged_members:
+        - port: port-channel 100
+        - port: port-channel 101
+        - port: port-channel 102
+  vlan 200:
+      tagged_members:
+        - port: port-channel 100
+        - port: port-channel 101
+        - port: port-channel 102
+
+dellos_lag:
+  port-channel 100:
+     type: dynamic
+     lacp:
+       long_timeout: false
+     channel_members:
+       - port: ethernet 1/1/13
+         mode: "active"
+       - port: ethernet 1/1/16
+         mode: "active"
+
+  port-channel 101:
+     type: dynamic
+     lacp:
+       long_timeout: false
+     channel_members:
+       - port: ethernet 1/1/7
+         mode: "active"
+       - port: ethernet 1/1/10
+         mode: "active"
+
+  port-channel 102:
+     type: dynamic
+     lacp:
+       long_timeout: false
+     channel_members:
+       - port: ethernet 1/1/1
+         mode: "active"
+       - port: ethernet 1/1/4
+         mode: "active"
+
+dellos_vrrp:
+    vlan100:
+       vrrp_group:
+         - group_id: 1
+           type: ipv4
+           virtual_address:
+             - ip: "{{ vlan100_vrrp_1_virtual_ip }}"
+           priority: "{{ vlan100_vrrp_1_priority }}"
+    vlan200:
+       vrrp_group:
+         - group_id: 1
+           type: ipv4
+           virtual_address:
+             - ip: "{{ vlan200_vrrp_1_virtual_ip }}"
+           priority: "{{ vlan200_vrrp_1_priority }}"
+
+interfaces:
+   vlan 100:
+     desc: "{{ vlan100_desc }}"
+     mtu: "{{ mtu }}"
+     ip_and_mask: "{{ vlan100_ip }}"
+     admin: up
+   vlan 200:
+     desc: "{{ vlan200_desc }}"
+     mtu: "{{ mtu }}"
+     ip_and_mask: "{{ vlan200_ip }}"
+     admin: up
+
+   port-channel 100:
+     desc: "To-rack3"
+     admin: up
+     mtu: "{{ mtu }}"
+   port-channel 101:
+     desc: "To-rack2"
+     admin: up
+     mtu: "{{ mtu }}"
+   port-channel 102:
+     desc: "To-rack1"
+     admin: up
+     mtu: "{{ mtu }}"
+
+   ethernet 1/1/1:
+            admin: up
+            desc: "To-Leaf1-rack1"
+            mtu: "{{ mtu }}"
+            switchport: False
+   ethernet 1/1/2:
+            admin: down
+            switchport: False
+   ethernet 1/1/3:
+            admin: down
+            switchport: False
+   ethernet 1/1/4:
+            desc: "To-Leaf2-rack1"
+            admin: up
+            mtu: "{{ mtu }}"
+            switchport: False
+   ethernet 1/1/5:
+           admin: down
+           switchport: False
+   ethernet 1/1/6:
+           admin: down
+           switchport: False
+   ethernet 1/1/7:
+           desc: "To-Leaf1-rack2"
+           admin: up
+           mtu: "{{ mtu }}"
+           switchport: False
+   ethernet 1/1/8:
+           admin: down
+           switchport: False
+   ethernet 1/1/9:
+           admin: down
+           switchport: False
+   ethernet 1/1/10:
+           desc: "To-Leaf2-rack2"
+           admin: up
+           mtu: "{{ mtu }}"
+           switchport: False
+   ethernet 1/1/11:
+           admin: down
+           switchport: False
+   ethernet 1/1/12:
+           admin: down
+           switchport: False
+   ethernet 1/1/13:
+           desc: "To-Leaf1-rack3"
+           admin: up
+           mtu: "{{ mtu }}"
+           switchport: false
+   ethernet 1/1/14:
+           admin: down
+           switchport: False
+   ethernet 1/1/15:
+           admin: down
+           switchport: False
+   ethernet 1/1/16:
+           desc: "To-Leaf2-rack3"
+           admin: up
+           mtu: "{{ mtu }}"
+           switchport: false
+   ethernet 1/1/17:
+           admin: down
+           switchport: false
+   ethernet 1/1/18:
+           admin: down
+           switchport: false
+   ethernet 1/1/19:
+           admin: down
+           switchport: false
+   ethernet 1/1/20:
+           admin: down
+           switchport: false
+   ethernet 1/1/21:
+           admin: down
+           switchport: false
+   ethernet 1/1/22:
+           admin: down
+           switchport: false
+   ethernet 1/1/23:
+           admin: down
+           switchport: false
+   ethernet 1/1/24:
+           admin: down
+           switchport: false
+   ethernet 1/1/25:
+     desc: "To-Exchange-Point-1"
+     mtu: "{{ mtu }}"
+     admin: up
+     switchport: False
+     ip_and_mask: "{{ intf_exchange1_1 }}"
+   ethernet 1/1/26:
+     desc: "To-Exchange-Point-1"
+     mtu: "{{ mtu }}"
+     admin: up
+     switchport: False
+     ip_and_mask: "{{ intf_exchange1_2 }}"
+   ethernet 1/1/27:
+     desc: "To-Exchange-Point-2"
+     mtu: "{{ mtu }}"
+     admin: up
+     switchport: False
+     ip_and_mask: "{{ intf_exchange2_1 }}"
+   ethernet 1/1/28:
+     desc: "To-Exchange-Point-2"
+     mtu: "{{ mtu }}"
+     admin: up
+     switchport: False
+     ip_and_mask: "{{ intf_exchange2_2 }}"
+   ethernet 1/1/29:
+            desc: "VLTi-link"
+            mtu: "{{ mtu }}"
+            switchport: false
+            admin: up
+   ethernet 1/1/30:
+            desc: "VLTi-link"
+            mtu: "{{ mtu }}"
+            switchport: false
+            admin: up
+   ethernet 1/1/31:
+            switchport: false
+            admin: down
+   ethernet 1/1/32:
+            switchport: false
+            admin: down
+   ethernet 1/1/33:
+            switchport: false
+            admin: down
+   ethernet 1/1/34:
+            switchport: false
+            admin: down
+
+
+dellos_bgp:
+    asn: "{{ bgp_spine_asn }}"
+    best_path:
+       as_path: multipath-relax
+    bfd: True
+    ipv4_network:
+       - address: 172.21.61.0/24
+         state: present
+       - address: 172.21.66.0/24
+         state: present
+    neighbor:
+      - ip: "{{ bgp_neighbor_ip_1 }}"
+        type: ipv4
+        remote_asn: "{{ bgp_exchange_asn }}"
+        admin: up
+
+      - ip: "{{ bgp_neighbor_ip_2 }}"
+        type: ipv4
+        remote_asn: "{{ bgp_exchange_asn }}"
+        admin: up
+
+      - ip: "{{ bgp_neighbor_ip_3 }}"
+        type: ipv4
+        remote_asn: "{{ bgp_exchange_asn }}"
+        admin: up
+
+      - ip: "{{ bgp_neighbor_ip_4 }}"
+        type: ipv4
+        remote_asn: "{{ bgp_exchange_asn }}"
+        admin: up
+
+dellos_acl:
+    - type: ipv4
+      name: scaleiodatainput
+      extended: true
+      entries:
+        - number: 20
+          permit: true
+          protocol: tcp
+          source: any host
+          destination: 172.21.61.26
+          dest_condition: eq 6611
+
+        - number: 21
+          permit: true
+          protocol: tcp
+          source: any host
+          destination: 172.21.66.26
+          dest_condition: eq 6611
+
+        - number: 30
+          permit: true
+          protocol: tcp
+          source: any
+          destination: 172.21.61.0/24
+          dest_condition: eq 7072
+
+        - number: 31
+          permit: true
+          protocol: tcp
+          source: any
+          destination: 172.21.66.0/24
+          dest_condition: eq 7072
+
+        - number: 40
+          permit: true
+          protocol: tcp
+          source: any host
+          destination: 172.21.61.4
+          dest_condition: eq 443
+
+        - number: 41
+          permit: true
+          protocol: tcp
+          source: any host
+          destination: 172.21.66.4
+          dest_condition: eq 443
+
+        - number: 50
+          permit: true
+          protocol: tcp
+          source: any host
+          destination: 172.21.61.10
+          dest_condition: eq 443
+
+        - number: 51
+          permit: true
+          protocol: tcp
+          source: any host
+          destination: 172.21.66.10
+          dest_condition: eq 443
+
+        - number: 60
+          permit: true
+          protocol: tcp
+          source: any host
+          destination: 172.21.61.16
+          dest_condition: eq 443
+
+        - number: 61
+          permit: true
+          protocol: tcp
+          source: any host
+          destination: 172.21.66.16
+          dest_condition: eq 443
+
+        - number: 70
+          permit: true
+          protocol: tcp
+          source: any host
+          destination: 172.21.61.26
+          dest_condition: eq 443
+
+        - number: 71
+          permit: true
+          protocol: tcp
+          source: any host
+          destination: 172.21.66.26
+          dest_condition: eq 443
+
+        - number: 80
+          permit: true
+          protocol: udp
+          source: any
+          destination: any
+          dest_condition: eq 3784
+
+        - number: 90
+          permit: true
+          protocol: udp
+          source: any
+          destination: any
+          dest_condition: eq 3785
+
+        - number: 100
+          permit: true
+          protocol: icmp
+          source: any
+          destination: 172.21.61.0/24
+
+        - number: 101
+          permit: true
+          protocol: icmp
+          source: any
+          destination: 172.21.66.0/24
+
+    - type: ipv4
+      name: scaleiodataoutput
+      extended: true
+      entries:
+        - number: 20
+          permit: true
+          protocol: tcp
+          source: 172.21.61.0/24
+          destination: any
+          dest_condition: ack rst
+
+        - number: 21
+          permit: true
+          protocol: tcp
+          source: 172.21.66.0/24
+          destination: any
+          dest_condition: ack rst
+
+        - number: 30
+          permit: true
+          protocol: udp
+          source: any
+          destination: any
+          dest_condition: eq 3784
+
+        - number: 40
+          permit: true
+          protocol: udp
+          source: any
+          destination: any
+          dest_condition: eq 3785
+
+        - number: 50
+          permit: true
+          protocol: icmp
+          source: 172.21.61.0/24
+          destination: any
+
+        - number: 51
+          permit: true
+          protocol: icmp
+          source: 172.21.66.0/24
+          destination: any
+

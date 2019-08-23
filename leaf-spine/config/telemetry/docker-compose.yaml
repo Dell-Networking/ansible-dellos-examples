@@ -1,0 +1,47 @@
+version: "3"
+services:
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus:/config/prometheus
+    ports:
+      - 9090:9090
+    networks:
+      network:
+        ipv4_address: 172.20.0.2
+    command: --config.file=/config/prometheus/prometheus.yaml
+    restart: always
+
+  snmp-exporter:
+    image: prom/snmp-exporter
+    volumes:
+      - ./snmp-exporter:/config/snmp-exporter
+    ports:
+      - 9116:9116
+      - 116:116/udp
+    command: --config.file=/config/snmp-exporter/snmp.yaml
+    networks:
+      network:
+        ipv4_address: 172.20.0.4
+    restart: always
+
+  grafana:
+    image: grafana/grafana
+    depends_on:
+      - prometheus
+    volumes:
+      - ./grafana:/etc/grafana
+    ports:
+      - 3000:3000
+    networks:
+      network:
+        ipv4_address: 172.20.0.6
+    restart: always
+    stdin_open: true
+    tty: true
+
+networks:
+  network:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

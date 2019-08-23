@@ -1,0 +1,8 @@
+---
+
+- hosts: datacenter
+  gather_facts: no
+  connection: network_cli
+  roles:
+      - Dell-Networking.dellos-image-install
+

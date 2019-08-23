@@ -1,0 +1,683 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{#############################################
+
+Purpose:
+Configure AAA commands for dellos9 Devices
+
+dellos_aaa:
+    tacacs_server:
+        key: 7
+        key_string: 9ea8ec421c2e2e5bec757f44205015f6d81e83a4f0aa52fa
+        group:
+          - name: TACACS
+            host:
+              - ip: 2001:4898:f0:f09b::1000
+                key: 0
+                key_string: aaa
+                auth_port: 3
+                timeout: 2
+                state: present
+            vrf:
+              vrf_name: test
+              source_intf: fortyGigE 1/2
+              state: present
+            state: present
+        host:
+          - ip: 2001:4898:f0:f09b::1000
+            key: 0
+            key_string: aaa
+            auth_port: 3
+            timeout: 2
+            state: present
+    radius_server:
+        key: 7
+        key_string: 9ea8ec421c2e2e5bec757f44205015f6d81e83a4f0aa52fb
+        retransmit: 5
+        timeout: 10
+        deadtime: 2000
+        group:
+          - name: Radius
+            host:
+              - ip: 2001:4898:f0:f09b::1001
+                key: 0
+                key_string: aaa
+                retransmit: 5
+                auth_port: 3
+                timeout: 2
+                state: present
+            vrf:
+              vrf_name: test
+              source_intf: fortyGigE 1/3
+              state: present
+            state: present
+        host:
+          - ip: 2001:4898:f0:f09b::1001
+            key: 0
+            key_string: aaa
+            retransmit: 5
+            auth_port: 3
+            timeout: 2
+            state: present
+    aaa_accounting:
+        commands:
+            - enable_level: 2
+              accounting_list_name: aa
+              no_accounting: true
+              record_option: start-stop
+              state: present
+        suppress: True
+        exec:
+            - accounting_list_name: aaa
+              no_accounting: true
+              state: present
+        dot1x: none
+        rest: none
+    aaa_authorization:
+        commands:
+            - enable_level: 2
+              authorization_list_name: aa
+              use_data: local
+              state: present
+            - role_name: netadmin
+              authorization_list_name: aa
+              authorization_method: none
+              use_data: local
+        config_commands: True
+        role_only: True
+        exec:
+            - authorization_list_name: aaa
+              authorization_method: if-authenticated
+              use_data: local
+              state: present
+    aaa_radius:
+      group: RADIUS
+      auth_method: pap
+    aaa_tacacs:
+      group: TACACS
+    aaa_authentication:
+        auth_list: 
+          - name: default
+            login_or_enable: login
+            server: tacacs+
+            use_password: local
+            state: present
+          - name: console
+            server: radius
+            login_or_enable: login
+            use_password: local
+    line_terminal:
+      vty 0:
+        authorization:
+          commands:
+             - enable_level: 2
+               authorization_list_name: aa
+               state: present
+             - enable_level: 2
+               authorization_list_name: aa
+               state: present
+          exec:
+             - authorization_list_name: aa
+               state: present
+        accounting:
+          commands:
+             - enable_level: 2
+               accounting_list_name: aa
+               state: present
+             - enable_level: 2
+               accounting_list_name: aa
+               state: present
+          exec:
+             - accounting_list_name: aa
+               state: present
+        authentication:
+          enable: aa
+          login: console
+
+##################################################}
+{% if dellos_aaa is defined and dellos_aaa %}
+{% for key in dellos_aaa.keys() %}
+  {% set aaa_vars =  dellos_aaa[key] %}
+  {% if key == "tacacs_server" %}
+    {% set server = "tacacs-server" %}
+  {% endif %}
+  {% if key == "radius_server" %}
+    {% set server = "radius-server" %}
+  {% endif %}
+  {% if server is defined and server %}
+    {% if aaa_vars %}
+    {% set item = aaa_vars %}
+      {% if item.retransmit is defined %}
+        {% if item.retransmit %}
+{{ server }} retransmit {{ item.retransmit }}
+        {% else %}
+no {{ server }} retransmit
+        {% endif %}
+      {% endif %}
+      {% if item.timeout is defined %}
+        {% if item.timeout %}
+{{ server }} timeout {{ item.timeout }}
+        {% else %}
+no {{ server }} timeout
+        {% endif %}
+      {% endif %}
+      {% if item.deadtime is defined %}
+        {% if item.deadtime %}
+{{ server }} deadtime {{ item.deadtime }}
+        {% else %}
+no {{ server }} deadtime
+        {% endif %}
+      {% endif %}
+      {% if item.key is defined %}
+        {% if item.key == 0 or item.key == 7 %}
+          {% if item.key_string is defined and item.key_string%}
+{{ server }} key {{ item.key }} {{ item.key_string }}
+          {% endif %}
+        {% elif item.key %}
+{{ server }} key {{ item.key }}
+        {% else %}
+no {{ server }} key
+        {% endif %}
+      {% endif %}
+      {% if item.host is defined and item.host %}
+        {% for hostlist in item.host %}
+          {% if hostlist.ip is defined and hostlist.ip %}
+            {% if hostlist.state is defined and hostlist.state == "absent" %}
+              {% if (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7) ) and (hostlist.key_string is defined and hostlist.key_string) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server"  %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+              {% elif (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }}
+              {% elif (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) and (hostlist.timeout is defined and hostlist.timeout) %}
+no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }} timeout {{ hostlist.timeout }}
+              {% elif (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) %}
+no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }}
+              {% elif (hostlist.key is defined and hostlist.key) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+              {% elif (hostlist.key is defined and hostlist.key) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }}
+              {% elif (hostlist.key is defined and hostlist.key) and (hostlist.timeout is defined and hostlist.timeout) %}
+no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} timeout {{ hostlist.timeout }}
+              {% elif (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+no {{ server }} host {{ hostlist.ip }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+              {% elif (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+no {{ server }} host {{ hostlist.ip }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }}
+              {% elif (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+no {{ server }} host {{ hostlist.ip }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+              {% elif (hostlist.timeout is defined and hostlist.timeout) %}
+no {{ server }} host {{ hostlist.ip }} timeout {{ hostlist.timeout }}
+              {% elif (hostlist.auth_port is defined and hostlist.auth_port) %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+no {{ server }} host {{ hostlist.ip }} {{ port }} {{ hostlist.auth_port }}
+              {% elif (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+no {{ server }} host {{ hostlist.ip }} retransmit {{ hostlist.retransmit }}
+              {% elif (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7) )%}
+no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }}
+              {% elif (hostlist.key is defined and hostlist.key) %}
+no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }}
+              {% else %}
+no {{ server }} host {{ hostlist.ip }}
+              {% endif %}
+            {% else %}
+             {% if (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+{{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+              {% elif (hostlist.key is defined and (hostlist.key== 0 or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+{{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }}
+              {% elif (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) and (hostlist.timeout is defined and hostlist.timeout) %}
+{{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }} timeout {{ hostlist.timeout }}
+              {% elif (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) %}
+{{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }}
+             {% elif (hostlist.key is defined and hostlist.key) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                 {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+{{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+              {% elif (hostlist.key is defined and hostlist.key) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+{{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }}
+              {% elif (hostlist.key is defined and hostlist.key) and (hostlist.timeout is defined and hostlist.timeout) %}
+{{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} timeout {{ hostlist.timeout }}
+              {% elif (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+{{ server }} host {{ hostlist.ip }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+              {% elif (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+{{ server }} host {{ hostlist.ip }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }}
+              {% elif (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+{{ server }} host {{ hostlist.ip }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+              {% elif (hostlist.timeout is defined and hostlist.timeout) %}
+{{ server }} host {{ hostlist.ip }} timeout {{ hostlist.timeout }}
+              {% elif (hostlist.auth_port is defined and hostlist.auth_port) %}
+                  {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+{{ server }} host {{ hostlist.ip }} {{ port }} {{ hostlist.auth_port }}
+              {% elif (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server"%}
+{{ server }} host {{ hostlist.ip }} retransmit {{ hostlist.retransmit }}
+              {% elif (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7))%}
+{{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }}
+              {% elif (hostlist.key is defined and hostlist.key) %}
+{{ server }} host {{ hostlist.ip }} key {{ hostlist.key }}
+              {% else %}
+{{ server }} host {{ hostlist.ip }}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+      {% if item.group is defined and item.group %}
+        {% for groupitem in item.group %}
+          {% if groupitem.name is defined and groupitem.name %}
+            {% if groupitem.state is defined and groupitem.state == "absent" %}
+no {{ server }} group {{ groupitem.name }}
+            {% else %}
+{{ server }} group {{ groupitem.name }}
+              {% if groupitem.host is defined and groupitem.host %}
+                {% for hostlist in groupitem.host %}
+                  {% if hostlist.ip is defined and hostlist.ip %}
+                    {% if hostlist.state is defined and hostlist.state == "absent" %}
+                      {% if (hostlist.key is defined and (hostlist.key or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server"  %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+                      {% elif (hostlist.key is defined and (hostlist.key or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }}
+                      {% elif (hostlist.key is defined and (hostlist.key or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) and (hostlist.timeout is defined and hostlist.timeout) %}
+ no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }} timeout {{ hostlist.timeout }}
+                      {% elif (hostlist.key is defined and (hostlist.key or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) %}
+ no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }}
+                      {% elif (hostlist.key is defined and hostlist.key) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+                      {% elif (hostlist.key is defined and hostlist.key) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }}
+                      {% elif (hostlist.key is defined and hostlist.key) and (hostlist.timeout is defined and hostlist.timeout) %}
+ no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} timeout {{ hostlist.timeout }}
+                      {% elif (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ no {{ server }} host {{ hostlist.ip }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+                      {% elif (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ no {{ server }} host {{ hostlist.ip }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }}
+                      {% elif (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ no {{ server }} host {{ hostlist.ip }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+                      {% elif (hostlist.timeout is defined and hostlist.timeout) %}
+ no {{ server }} host {{ hostlist.ip }} timeout {{ hostlist.timeout }}
+                      {% elif (hostlist.auth_port is defined and hostlist.auth_port) %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ no {{ server }} host {{ hostlist.ip }} {{ port }} {{ hostlist.auth_port }}
+                      {% elif (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+ no {{ server }} host {{ hostlist.ip }} retransmit {{ hostlist.retransmit }}
+                      {% elif (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7)) %}
+ no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }}
+                      {% elif (hostlist.key is defined and hostlist.key) %}
+ no {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }}
+                      {% else %}
+ no {{ server }} host {{ hostlist.ip }}
+                      {% endif %}
+                    {% else %}
+                      {% if (hostlist.key is defined and (hostlist.key== 0 or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+                      {% elif (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }}
+                      {% elif (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string) and (hostlist.timeout is defined and hostlist.timeout) %}
+ {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }} timeout {{ hostlist.timeout }}
+                      {% elif (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7)) and (hostlist.key_string is defined and hostlist.key_string)  %}
+ {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }}
+                      {% elif (hostlist.key is defined and hostlist.key) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+                      {% elif (hostlist.key is defined and hostlist.key) and (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }}
+                      {% elif (hostlist.key is defined and hostlist.key) and (hostlist.timeout is defined and hostlist.timeout) %}
+ {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} timeout {{ hostlist.timeout }}
+                      {% elif (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ {{ server }} host {{ hostlist.ip }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }} 
+                      {% elif (hostlist.timeout is defined and hostlist.timeout) and (hostlist.auth_port is defined and hostlist.auth_port) %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ {{ server }} host {{ hostlist.ip }} timeout {{ hostlist.timeout }} {{ port }} {{ hostlist.auth_port }}
+                      {% elif (hostlist.auth_port is defined and hostlist.auth_port) and (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server" %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ {{ server }} host {{ hostlist.ip }} {{ port }} {{ hostlist.auth_port }} retransmit {{ hostlist.retransmit }}
+                      {% elif (hostlist.timeout is defined and hostlist.timeout) %}
+ {{ server }} host {{ hostlist.ip }} timeout {{ hostlist.timeout }}
+                      {% elif (hostlist.auth_port is defined and hostlist.auth_port) %}
+                      {% if server == "radius-server" %}{%set port = "auth-port" %}{%else %}{% set port = "port" %}{% endif %}
+ {{ server }} host {{ hostlist.ip }} {{ port }} {{ hostlist.auth_port }}
+                      {% elif (hostlist.retransmit is defined and hostlist.retransmit) and server == "radius-server"%}
+ {{ server }} host {{ hostlist.ip }} retransmit {{ hostlist.retransmit }}
+                      {% elif (hostlist.key is defined and (hostlist.key == 0 or hostlist.key == 7)) %}
+ {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }} {{ hostlist.key_string }}
+                      {% elif (hostlist.key is defined and hostlist.key) %}
+ {{ server }} host {{ hostlist.ip }} key {{ hostlist.key }}
+                      {% else %}
+ {{ server }} host {{ hostlist.ip }}
+                      {% endif %}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+              {% if groupitem.vrf is defined and groupitem.vrf %}
+                {% if groupitem.vrf.vrf_name is defined and groupitem.vrf.vrf_name %}
+                  {% if groupitem.vrf.state is defined and groupitem.vrf.state == "absent" %}
+ no {{ server }} vrf {{ groupitem.vrf.vrf_name }}
+                  {% else %}
+                    {% if groupitem.vrf.source_intf is defined and groupitem.vrf.source_intf %}
+ {{ server }} vrf {{ groupitem.vrf.vrf_name }} source-interface {{ groupitem.vrf.source_intf }}
+                    {% else %}
+ {{ server }} vrf {{ groupitem.vrf.vrf_name }}
+                    {% endif %}
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+  {% if dellos_aaa.aaa_accounting is defined and dellos_aaa.aaa_accounting %}
+    {% set aaa_accounting = dellos_aaa.aaa_accounting %}
+    {% if aaa_accounting.suppress is defined %}
+      {% if aaa_accounting.suppress %}
+aaa accounting suppress null-username
+      {% else %}
+no aaa accounting suppress null-username
+      {% endif %}
+    {% endif %}
+    {% if aaa_accounting.dot1x is defined %}
+      {% if aaa_accounting.dot1x == "none" %}
+aaa accounting dot1x default none
+      {% elif aaa_accounting.dotx %}
+aaa accounting dot1x default {{ aaa_accounting.dot1x }} tacacs+
+      {% else %}
+no aaa accounting dotx default
+      {% endif %}
+    {% endif %}
+    {% if aaa_accounting.rest is defined %}
+      {% if aaa_accounting.rest == "none" %}
+aaa accounting rest default none
+      {% elif aaa_accounting.rest %}
+aaa accounting rest default {{ aaa_accounting.rest }} tacacs+
+      {% else %}
+no aaa accounting rest default
+      {% endif %}
+    {% endif %}
+    {% if aaa_accounting.exec is defined and aaa_accounting.exec %}
+      {% for command in aaa_accounting.exec %}
+        {% if command.accounting_list_name is defined and command.accounting_list_name %}
+          {% if command.state is defined and command.state == "absent" %}
+no aaa accounting exec {{ command.accounting_list_name }}
+          {% else %}
+            {% if command.record_option is defined and command.record_option %}
+aaa accounting exec {{ command.accounting_list_name }} {{ command.record_option }} tacacs+
+            {% elif command.no_accounting is defined and command.no_accounting %}
+aaa accounting exec {{ command.accounting_list_name }} none
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if aaa_accounting.commands is defined and aaa_accounting.commands %}
+      {% for command in aaa_accounting.commands %}
+        {% if command.enable_level is defined and command.enable_level %}
+          {% if command.accounting_list_name is defined and command.accounting_list_name %}
+            {% if command.state is defined and command.state == "absent" %}
+no aaa accounting commands {{ command.enable_level }} {{ command.accounting_list_name }}
+            {% else %}
+              {% if command.record_option is defined and command.record_option %}
+aaa accounting commands {{ command.enable_level }} {{ command.accounting_list_name }} {{ command.record_option }} tacacs+
+              {% elif command.no_accounting is defined and command.no_accounting %}
+aaa accounting commands {{ command.enable_level }} {{ command.accounting_list_name }} none
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% elif command.role_name is defined and command.role_name %}
+          {% if command.accounting_list_name is defined and command.accounting_list_name %}
+            {% if command.state is defined and command.state == "absent" %}
+no aaa accounting commands role {{ command.role_name }} {{ command.accounting_list_name }}
+            {% else %}
+              {% if command.record_option is defined and command.record_option %}
+aaa accounting commands role {{ command.role_name }} {{ command.accounting_list_name }} {{ command.record_option }} tacacs+
+              {% elif command.no_accounting is defined and command.no_accounting %}
+aaa accounting commands role {{ command.role_name }} {{ command.accounting_list_name }} none
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+  {% if dellos_aaa.aaa_authorization is defined and dellos_aaa.aaa_authorization %}
+    {% set aaa_authorization = dellos_aaa.aaa_authorization %}
+    {% if aaa_authorization.config_commands is defined %}
+      {% if aaa_authorization.config_commands %}
+aaa authorization config-commands
+      {% else %}
+no aaa authorization config-commands
+      {% endif %}
+    {% endif %}
+    {% if aaa_authorization.role_only is defined %}
+      {% if aaa_authorization.role_only %}
+aaa authorization role-only
+      {% else %}
+no aaa authorization role-only
+      {% endif %}
+    {% endif %}
+    {% if aaa_authorization.exec is defined and aaa_authorization.exec %}
+      {% for command in aaa_authorization.exec %}
+        {% if command.authorization_list_name is defined and command.authorization_list_name %}
+          {% if command.state is defined and command.state == "absent" %}
+no aaa authorization exec {{ command.authorization_list_name }}
+          {% else %}
+            {% if command.use_data is defined and command.use_data %}
+              {% if command.authorization_method is defined and command.authorization_method %}
+aaa authorization exec {{ command.authorization_list_name }} {{ command.use_data }} {{ command.authorization_method }}
+              {% else %}
+aaa authorization exec {{ command.authorization_list_name }} {{ command.use_data }}
+              {% endif %}
+            {% else %}
+              {% if command.authorization_method is defined and command.authorization_method %}
+aaa authorization exec {{ command.authorization_list_name }} {{ command.authorization_method }}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if aaa_authorization.commands is defined and aaa_authorization.commands %}
+      {% for command in aaa_authorization.commands %}
+        {% if command.enable_level is defined and command.enable_level %}
+          {% if command.authorization_list_name is defined and command.authorization_list_name %}
+            {% if command.state is defined and command.state == "absent" %}
+no aaa authorization commands {{ command.enable_level }} {{ command.authorization_list_name }}
+            {% else %}
+              {% if command.use_data is defined and command.use_data %}
+                {% if command.authorization_method is defined and command.authorization_method %}
+aaa authorization commands {{ command.enable_level }} {{ command.authorization_list_name }} {{ command.use_data }} {{ command.authorization_method }}
+                {% else %}
+aaa authorization commands {{ command.enable_level }} {{ command.authorization_list_name }} {{ command.use_data }}
+                {% endif %}
+              {% else %}
+                {% if command.authorization_method is defined and command.authorization_method %}
+aaa authorization commands {{ command.enable_level }} {{ command.authorization_list_name }} {{ command.authorization_method }}
+                {% endif %}
+              {% endif %}
+            {% endif %}    
+          {% endif %}
+        {% elif command.role_name is defined and command.role_name %}
+          {% if command.authorization_list_name is defined and command.authorization_list_name %}
+            {% if command.state is defined and command.state == "absent" %}
+no aaa authorization commands role {{ command.role_name }} {{ command.authorization_list_name }}
+            {% else %}
+              {% if command.use_data is defined and command.use_data %}
+                {% if command.authorization_method is defined and command.authorization_method %}
+aaa authorization commands role {{ command.role_name }} {{ command.authorization_list_name }} {{ command.use_data }} {{ command.authorization_method }}
+                {% else %}
+aaa authorization commands role {{ command.role_name }} {{ command.authorization_list_name }} {{ command.use_data }}
+                {% endif %}
+              {% else %}
+                {% if command.authorization_method is defined and command.authorization_method %}
+aaa authorization commands role {{ command.role_name }} {{ command.authorization_list_name }} {{ command.authorization_method }}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+
+  {% if dellos_aaa.aaa_radius is defined and dellos_aaa.aaa_radius %}
+    {% if dellos_aaa.aaa_radius.group is defined %}
+        {% if dellos_aaa.aaa_radius.group %}
+aaa radius group {{ dellos_aaa.aaa_radius.group }}
+        {% else %}
+no aaa radius group
+        {% endif %}
+    {% endif %}
+   {% if dellos_aaa.aaa_radius.auth_method is defined %}
+        {% if dellos_aaa.aaa_radius.auth_method %}
+aaa radius auth-method {{ dellos_aaa.aaa_radius.auth_method }}
+        {% else %}
+no aaa radius auth-method
+        {% endif %}
+    {% endif %}
+  {% endif %}
+  {% if dellos_aaa.aaa_tacacs is defined and dellos_aaa.aaa_tacacs %}
+    {% if dellos_aaa.aaa_tacacs.group is defined %}
+        {% if dellos_aaa.aaa_tacacs.group %}
+aaa tacacs group {{ dellos_aaa.aaa_tacacs.group }}
+        {% else %}
+no aaa tacacs group
+        {% endif %}
+    {% endif %}
+  {% endif %}
+
+  {% if dellos_aaa.aaa_authentication is defined and dellos_aaa.aaa_authentication %}
+    {% if dellos_aaa.aaa_authentication.auth_list is defined and dellos_aaa.aaa_authentication.auth_list %}
+      {% for auth_list in dellos_aaa.aaa_authentication.auth_list %}
+        {% if auth_list.login_or_enable is defined and auth_list.login_or_enable %}
+          {% if auth_list.name is defined and auth_list.name %}
+            {% if auth_list.state is defined and auth_list.state == "absent" %}
+no aaa authentication {{ auth_list.login_or_enable }} {{ auth_list.name }}
+            {% else %}
+              {% if auth_list.server is defined and auth_list.server %}
+                {% if auth_list.use_password is defined and auth_list.use_password %}
+aaa authentication {{ auth_list.login_or_enable }} {{ auth_list.name }} {{ auth_list.server }} {{ auth_list.use_password }}
+                {% else %}
+aaa authentication {{ auth_list.login_or_enable }} {{ auth_list.name }} {{ auth_list.server }}
+                {% endif %}
+              {% else %}
+                {% if auth_list.use_password is defined and auth_list.use_password %}
+aaa authentication {{ auth_list.login_or_enable }} {{ auth_list.name }} {{ auth_list.use_password }}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+
+  {% if dellos_aaa.line_terminal is defined and dellos_aaa.line_terminal %}
+    {% for terminal in dellos_aaa.line_terminal.keys() %}
+      {% set terminal_vars = dellos_aaa.line_terminal[terminal] %}
+line {{ terminal }}
+      {% if terminal_vars.authorization is defined and terminal_vars.authorization %}
+        {% if terminal_vars.authorization.commands is defined and terminal_vars.authorization.commands %}
+          {% for commands in terminal_vars.authorization.commands %}
+            {% if commands.enable_level is defined and commands.enable_level %}
+              {% if commands.state is defined and commands.state  == "absent" %}
+ no authorization commands {{ commands.enable_level }}
+              {% else %}
+                {% if commands.authorization_list_name is defined and commands.authorization_list_name %}
+ authorization commands {{ commands.enable_level }} {{ commands.authorization_list_name }}
+                {% endif %}
+              {% endif %}
+            {% elif commands.role_name is defined and commands.role_name %}
+              {% if commands.state is defined and commands.state  == "absent" %}
+ no authorization commands role {{ commands.role_name }}
+              {% else %}
+                {% if commands.authorization_list_name is defined and commands.authorization_list_name %}
+ authorization commands role {{ commands.role_name }} {{ commands.authorization_list_name }}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% if terminal_vars.authorization.exec is defined and terminal_vars.authorization.exec %}
+        {% set exec = terminal_vars.authorization.exec  %}
+          {% if exec.state is defined and exec.state  == "absent" %}
+ no authorization exec 
+          {% else %}
+            {% if exec.authorization_list_name is defined and exec.authorization_list_name %}
+ authorization exec {{ exec.authorization_list_name }}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+      {% if terminal_vars.accounting is defined and terminal_vars.accounting %}
+        {% if terminal_vars.accounting.commands is defined and terminal_vars.accounting.commands %}
+          {% for commands in terminal_vars.accounting.commands %}
+            {% if commands.enable_level is defined and commands.enable_level %}
+              {% if commands.state is defined and commands.state  == "absent" %}
+ no accounting commands {{ commands.enable_level }}
+              {% else %}
+                {% if commands.accounting_list_name is defined and commands.accounting_list_name %}
+ accounting commands {{ commands.enable_level }} {{ commands.accounting_list_name }}
+                {% endif %}
+              {% endif %}
+            {% elif commands.role_name is defined and commands.role_name %}
+              {% if commands.state is defined and commands.state  == "absent" %}
+ no accounting commands role {{ commands.role_name }}
+              {% else %}
+                {% if commands.accounting_list_name is defined and commands.accounting_list_name %}
+ accounting commands role {{ commands.role_name }} {{ commands.accounting_list_name }}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {% if terminal_vars.accounting.exec is defined and terminal_vars.accounting.exec %}
+        {% set exec = terminal_vars.accounting.exec  %}
+          {% if exec.state is defined and exec.state  == "absent" %}
+ no accounting exec
+          {% else %}
+            {% if exec.accounting_list_name is defined and exec.accounting_list_name %}
+ authorization exec {{ exec.accounting_list_name }}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+      {% if terminal_vars.authentication is defined and terminal_vars.authentication %}
+        {% if terminal_vars.authentication.enable is defined %}
+          {% if terminal_vars.authentication.enable %}
+ enable authentication {{ terminal_vars.authentication.enable }}
+          {% else %}
+ no enable authentication
+          {% endif %}
+        {% endif %}
+        {% if terminal_vars.authentication.login is defined %}
+          {% if terminal_vars.authentication.login %}
+ login authentication {{ terminal_vars.authentication.login }}
+          {% else %}
+ no login authentication
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endif %}

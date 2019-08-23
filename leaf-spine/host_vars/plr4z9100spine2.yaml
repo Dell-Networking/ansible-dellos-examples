@@ -1,0 +1,27 @@
+---
+
+vlan100_ip: 172.21.61.3/24
+vlan200_ip: 172.21.66.3/24
+vlan100_vrrp_1_priority: 20
+vlan200_vrrp_1_priority: 10
+
+vlt_backup_destination: 172.21.62.177
+vlt_primary_priority: 2
+vlt_mac: 00:00:00:00:00:01
+
+bfd_multiplier: 3
+
+tacacs_server_host_key_value: d7d6761dcce003bd497fd396a37f99db7fd0965d405254dc04d64df7a72056c8
+
+hash_alg_lag_mode: crc32LSB
+
+intf_exchange1_1: 192.168.0.8/31
+intf_exchange1_2: 192.168.0.10/31
+intf_exchange2_1: 192.168.0.12/31
+intf_exchange2_2: 192.168.0.14/31
+
+bgp_neighbor_ip_1: 192.168.0.9 
+bgp_neighbor_ip_2: 192.168.0.11
+bgp_neighbor_ip_3: 192.168.0.13
+bgp_neighbor_ip_4: 192.168.0.15
+

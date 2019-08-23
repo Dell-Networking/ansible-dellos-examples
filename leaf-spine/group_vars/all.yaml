@@ -1,0 +1,139 @@
+---
+
+ansible_ssh_user: admin
+ansible_ssh_pass: admin
+ansible_network_os: dellos10
+
+dellos_cfg_generate: False
+build_dir: /root/Ansible/bengal-tiger-master/config
+
+hostname: "{{ inventory_hostname }}"
+hash_alg_ecmp_mode: crc32LSB
+management_rt_ip: 172.21.62.1
+
+bgp_spine_asn: 4200010039
+bgp_exchange_asn: 4200010042
+bgp_cisco_fabric_1_asn: 420020002
+bgp_cisco_fabric_2_asn: 4200010023
+3tier_fabric_switch_asn: 64987
+
+ntp_enable_vrf : management
+
+name_server:
+    vrf: management
+    ip:
+        - 137.137.44.26
+        - 137.136.149.16
+        - 130.247.204.96
+
+mtu: 9216
+
+dellos_vrf:
+   vrfdetails:
+     vrf_name: management
+     tagged_portname:
+       - port: management
+         state: present
+
+dellos_ntp:
+      source: mgmt1/1/1
+      server:
+        - ip: 0.us.pool.ntp.server.net
+          state: present
+        - ip: 1.us.pool.ntp.server.net
+          state: present
+        - ip: 2.us.pool.ntp.server.net
+          state: present
+        - ip: seantp.services.server.com
+          state: present
+
+#users:
+#  - username: rk733y
+#    password: "{{ rk733y_pwd }}"
+#    role: sysadmin
+#    priv_level: 15
+#    state: present
+
+all_system:
+  hostname: "{{ inventory_hostname }}"
+#  management_rt:
+#    - ip: "{{ management_rt_ip }}"
+#      state: present
+#      ipv4: True
+
+dellos_qos:
+  policy_map:
+   - name: policy-iscsi
+     type: application
+     state: present
+  class_map:
+   - name: class-iscsi
+     type: application
+     state: present
+
+all_vlt:
+   domain: 1
+   discovery_intf: 1/1/29-1/1/30
+   vlt_mac: "{{ vlt_mac }}"
+   backup_destination: "{{ vlt_backup_destination }}"
+   backup_vrf_instance: management
+   primary_priority: "{{ vlt_primary_priority }}"
+
+dellos_snmp:
+  snmp_contact: http://www.dell.com/support
+  snmp_location: Lab
+  snmp_community:
+    - name: public
+      access_mode: ro
+      state: present
+  snmp_traps:
+      - name: all
+      - name: entity
+      - name: lldp rem-tables-change
+      - name: snmp coldStart
+      - name: snmp warmStart
+  snmp_host:
+      - ip: 172.21.62.184
+        communitystring: public
+        version: "2c"
+
+######## Below variables are for image install ############
+cmd: "pwd"
+
+dellos_image_upgrade:
+  operation_type: install
+  number_of_retries: 50
+  software_image_url: "{{ image|default('') }}"
+  software_version: 10.4.3.1P1
+
+ssh_esc : '\x03\n'
+ssh_close: "exit\n"
+
+cmds: "{{ cmd.splitlines() }}"
+
+nos_install_exp:
+  'ONIE:/root #': "{{cmds}}"
+  Initializing installer: ""
+  Installing OS10 on primary partition: ""
+  OS10 installation on primary partition is complete.: ""
+
+exp: {}
+onie_cmd: |
+  onie-discovery-stop
+  exit
+
+onie_prompt_exp:
+  'ONIE:/root #': "{{ssh_close}}"
+
+extra_exp: {}
+
+default_exp:
+  "Permission denied.*": "{{ssh_esc}}"
+
+#image: "http://10.11.8.207/NGOS/ar-rel_10.4.3-release/AmazonInstallers/latest-build-132/PKGS_OS10-Enterprise-10.4.3E.132stretch-installer-x86_64.bin"
+
+nos_exp: |
+  Installing GRUB ... OK
+nos_install: |
+  onie-nos-install {{ image|default('') }}
+

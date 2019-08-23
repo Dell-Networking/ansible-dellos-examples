@@ -1,0 +1,126 @@
+---
+# vars file for Dell-Networking.dellos-snmp, below gives a sample configuration
+ 
+# Sample variables for dellos9 device
+dellos_snmp:
+    snmp_contact:  test
+    snmp_location: chennai
+    snmp_server_vrf: test
+    snmp_context:
+      - name: SNMP1
+        state: present
+    snmp_packet_size: 16
+    snmp_community:
+      - name: public
+        access_mode: ro
+        state: present
+      - name: private
+        access_mode: rw
+        state: present
+    snmp_host:
+      - ipv4: 1.1.1.1
+        version: 3
+        vrf:
+          - test
+          - management
+        security_level: noauth
+        communitystring: ab
+        udpport: 1
+        state: absent
+      - ipv6: 2001:4898:f0:f09b::2000 
+        version: 1
+        state: present
+    snmp_traps:
+      - name: config
+        state: present
+    snmp_engine_id: 1234567890
+    snmp_view:
+      - name: view_1
+        oid_subtree: 2
+        include: false
+        state: absent
+    snmp_user:
+      - name: user_1
+        group_name: grp1
+        version: 3
+        access_list:
+          access: a1
+        encryption: true
+        auth_algorithm: md5
+        auth_pass: 12345678
+        state: present
+      - name: user_2
+        group_name: grp1
+        version: "2c"
+        access_list:
+          access: a2
+          ipv6: ip1
+        state: present
+    snmp_group:
+      - name: group_1
+        version: 2c
+        access_list:
+          access: a1
+          ipv6: ip1
+        context: 
+          - context_name: c1
+            state: present
+          - context_name: c2
+            access_list:
+              access: a1
+              ipv6: ip1
+            view:
+              notify: n1
+              read: r1
+              write: w1
+        state: absent
+      - name: group_2
+        version: 3
+        security_level: priv
+        access_list:
+          access: a1
+          ipv6: ip1
+        state: present
+
+# Sample variables for dellos6 device
+dellos_snmp:
+    snmp_contact:  test
+    snmp_location: Chennai
+    snmp_community:
+      - name: public
+        access_mode: ro
+        delete: False
+      - name: private
+        access_mode: rw
+        state: absent
+    snmp_traps: 
+      - name: all
+        state: present
+    snmp_host:
+      - ip: 4.4.4.4
+        communitystring: public
+        udpport: 1
+        state: absent
+
+# Sample variables for dellos10 device
+dellos_snmp:
+    snmp_contact:  test
+    snmp_location: Chennai
+    snmp_community:
+      - name: public
+        access_mode: ro
+        state: present
+    snmp_traps: 
+      - name: all
+        state: present
+    snmp_host:
+      - ip: 1.1.1.1
+        communitystring: c1
+        version: "2c"
+        udpport: 4
+        state: present
+      - ip: 2.2.2.2
+        version: 1
+        communitystring: c3
+        state: present
+

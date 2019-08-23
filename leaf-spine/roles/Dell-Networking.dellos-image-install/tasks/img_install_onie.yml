@@ -1,0 +1,98 @@
+---
+
+- block:  
+  - name: Login and get prompt 
+    include_tasks: ssh-cmd.yml
+    vars:
+      cmd: "{{onie_cmd}}"
+      extra_exp: "{{nos_install_exp}}" 
+    register: output
+  
+  - fail:
+     msg: System crashed {{inventory_hostname}} and not in ONIE or OS10 prompt
+    when: 
+      - "'ONIE' not in output.stdout"
+      - "'OS10' not in output.stdout"
+
+  - name: " issue ip http vrf management for the image upgrade through management" 
+    dellos10_config: 
+      commands:   
+        - command: ip http vrf management
+          prompt: '\[yes/no\(default\)\]:?$' 
+          answer: "yes" 
+    register: handle_prompt 
+    when: "'OS10' in output.stdout"
+
+  - name: Upgrade OS10 image from OS10 prompt
+    delegate_to: localhost
+    include_role:
+      name: Dell-Networking.dellos-image-upgrade
+    when: "'OS10' in output.stdout"
+    ignore_errors: yes
+
+  - name: Boot OS10 device in standby partition
+    dellos10_command:
+      commands: boot system standby
+    when: "'OS10' in output.stdout"
+
+  - name: SSH into the switch to reload
+    delegate_to: localhost
+    become: no
+    expect:
+      command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no admin@{{ansible_host}}  
+      responses:
+         .*password: "{{ansible_ssh_pass}}"
+         'OS10#': "reload ztd"
+         'Remove startup-config and reboot\? \[confirm yes/no\]:': "yes"
+      timeout: 300
+      echo: no
+    register: reload_ztd
+    retries: 3
+    delay: 3
+    when: "'OS10' in output.stdout" 
+    ignore_errors: yes
+
+  - pause:
+     seconds: 120
+    when: "'OS10' in output.stdout"
+
+  - name: SSH into the switch to do one more reload for the ZTP to kick
+    delegate_to: localhost
+    become: no
+    expect:
+      command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no admin@{{ansible_host}}
+      responses:
+         .*password: "{{ansible_ssh_pass}}"
+         'OS10#': "reload ztd"
+         'Remove startup-config and reboot\? \[confirm yes/no\]:': "yes"
+      timeout: 600
+      echo: no
+    register: reload_ztd1
+    retries: 30
+    delay: 60
+    until: reload_ztd1 | success
+    when: "'OS10' in output.stdout"
+    ignore_errors: yes
+
+  - name: Wait 300 seconds for the switch to come up
+    wait_for:
+      port: 22
+      host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+      delay: 10
+    vars:
+      ansible_connection: local
+    when: "'OS10' in output.stdout"
+
+  - name: Install OS10 image from ONIE prompt
+    include_tasks: ssh-cmd.yml
+    vars:
+      cmd: "{{ nos_install }}"
+      extra_exp: "{{ nos_install_exp }}"
+      timeout: 500
+    register: output
+    retries: 3
+    delay: 2
+    until: "'Synchronizing standby partition ... OK' in output.msg"
+    failed_when: 'output.stdout is search("wget: (bad address|download timed out|server returned error)")'
+    when: 'output.stdout is search("ONIE:/")'
+    ignore_errors: yes

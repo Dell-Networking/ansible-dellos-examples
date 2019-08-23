@@ -1,0 +1,23 @@
+spine1 ansible_host=10.11.182.25 ansible_net_os_name="dellos10"
+spine2 ansible_host=10.16.151.220 ansible_net_os_name="dellos10"
+
+leaf1 ansible_host=10.11.182.23 ansible_net_os_name="dellos10"
+leaf2 ansible_host=10.11.182.16 ansible_net_os_name="dellos10"
+leaf3 ansible_host=10.11.182.17 ansible_net_os_name="dellos9"
+leaf4 ansible_host=10.16.148.79 ansible_net_os_name="dellos6"
+
+[spine]
+spine1
+spine2
+
+[leaf]
+leaf1
+leaf2
+leaf3
+leaf4
+
+[datacenter:children]
+spine
+leaf
+~
+

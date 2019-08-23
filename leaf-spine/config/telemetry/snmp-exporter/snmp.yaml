@@ -1,0 +1,364 @@
+# WARNING: This file was auto-generated using snmp_exporter generator, manual changes will be lost.
+OS10:
+  walk:
+  - 1.3.6.1.2.1.2.2.1
+  - 1.3.6.1.2.1.25.2.3.1
+  - 1.3.6.1.2.1.25.3.3.1.2
+  get:
+  - 1.3.6.1.2.1.1.3.0
+  - 1.3.6.1.2.1.1.5.0
+  metrics:
+  - name: sysUpTime
+    oid: 1.3.6.1.2.1.1.3
+    type: gauge
+    help: The time (in hundredths of a second) since the network management portion
+      of the system was last re-initialized. - 1.3.6.1.2.1.1.3
+  - name: sysName
+    oid: 1.3.6.1.2.1.1.5
+    type: DisplayString
+    help: An administratively-assigned name for this managed node - 1.3.6.1.2.1.1.5
+  - name: ifIndex
+    oid: 1.3.6.1.2.1.2.2.1.1
+    type: gauge
+    help: A unique value, greater than zero, for each interface - 1.3.6.1.2.1.2.2.1.1
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifDescr
+    oid: 1.3.6.1.2.1.2.2.1.2
+    type: DisplayString
+    help: A textual string containing information about the interface - 1.3.6.1.2.1.2.2.1.2
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifType
+    oid: 1.3.6.1.2.1.2.2.1.3
+    type: gauge
+    help: The type of interface - 1.3.6.1.2.1.2.2.1.3
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifMtu
+    oid: 1.3.6.1.2.1.2.2.1.4
+    type: gauge
+    help: The size of the largest packet which can be sent/received on the interface,
+      specified in octets - 1.3.6.1.2.1.2.2.1.4
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifSpeed
+    oid: 1.3.6.1.2.1.2.2.1.5
+    type: gauge
+    help: An estimate of the interface's current bandwidth in bits per second - 1.3.6.1.2.1.2.2.1.5
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifPhysAddress
+    oid: 1.3.6.1.2.1.2.2.1.6
+    type: PhysAddress48
+    help: The interface's address at its protocol sub-layer - 1.3.6.1.2.1.2.2.1.6
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifAdminStatus
+    oid: 1.3.6.1.2.1.2.2.1.7
+    type: gauge
+    help: The desired state of the interface - 1.3.6.1.2.1.2.2.1.7
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifOperStatus
+    oid: 1.3.6.1.2.1.2.2.1.8
+    type: gauge
+    help: The current operational state of the interface - 1.3.6.1.2.1.2.2.1.8
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifLastChange
+    oid: 1.3.6.1.2.1.2.2.1.9
+    type: gauge
+    help: The value of sysUpTime at the time the interface entered its current operational
+      state - 1.3.6.1.2.1.2.2.1.9
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifInOctets
+    oid: 1.3.6.1.2.1.2.2.1.10
+    type: counter
+    help: The total number of octets received on the interface, including framing
+      characters - 1.3.6.1.2.1.2.2.1.10
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifInUcastPkts
+    oid: 1.3.6.1.2.1.2.2.1.11
+    type: counter
+    help: The number of packets, delivered by this sub-layer to a higher (sub-)layer,
+      which were not addressed to a multicast or broadcast address at this sub-layer
+      - 1.3.6.1.2.1.2.2.1.11
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifInNUcastPkts
+    oid: 1.3.6.1.2.1.2.2.1.12
+    type: counter
+    help: The number of packets, delivered by this sub-layer to a higher (sub-)layer,
+      which were addressed to a multicast or broadcast address at this sub-layer -
+      1.3.6.1.2.1.2.2.1.12
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifInDiscards
+    oid: 1.3.6.1.2.1.2.2.1.13
+    type: counter
+    help: The number of inbound packets which were chosen to be discarded even though
+      no errors had been detected to prevent their being deliverable to a higher-layer
+      protocol - 1.3.6.1.2.1.2.2.1.13
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifInErrors
+    oid: 1.3.6.1.2.1.2.2.1.14
+    type: counter
+    help: For packet-oriented interfaces, the number of inbound packets that contained
+      errors preventing them from being deliverable to a higher-layer protocol - 1.3.6.1.2.1.2.2.1.14
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifInUnknownProtos
+    oid: 1.3.6.1.2.1.2.2.1.15
+    type: counter
+    help: For packet-oriented interfaces, the number of packets received via the interface
+      which were discarded because of an unknown or unsupported protocol - 1.3.6.1.2.1.2.2.1.15
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifOutOctets
+    oid: 1.3.6.1.2.1.2.2.1.16
+    type: counter
+    help: The total number of octets transmitted out of the interface, including framing
+      characters - 1.3.6.1.2.1.2.2.1.16
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifOutUcastPkts
+    oid: 1.3.6.1.2.1.2.2.1.17
+    type: counter
+    help: The total number of packets that higher-level protocols requested be transmitted,
+      and which were not addressed to a multicast or broadcast address at this sub-layer,
+      including those that were discarded or not sent - 1.3.6.1.2.1.2.2.1.17
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifOutNUcastPkts
+    oid: 1.3.6.1.2.1.2.2.1.18
+    type: counter
+    help: The total number of packets that higher-level protocols requested be transmitted,
+      and which were addressed to a multicast or broadcast address at this sub-layer,
+      including those that were discarded or not sent - 1.3.6.1.2.1.2.2.1.18
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifOutDiscards
+    oid: 1.3.6.1.2.1.2.2.1.19
+    type: counter
+    help: The number of outbound packets which were chosen to be discarded even though
+      no errors had been detected to prevent their being transmitted - 1.3.6.1.2.1.2.2.1.19
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifOutErrors
+    oid: 1.3.6.1.2.1.2.2.1.20
+    type: counter
+    help: For packet-oriented interfaces, the number of outbound packets that could
+      not be transmitted because of errors - 1.3.6.1.2.1.2.2.1.20
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: ifOutQLen
+    oid: 1.3.6.1.2.1.2.2.1.21
+    type: gauge
+    help: The length of the output packet queue (in packets). - 1.3.6.1.2.1.2.2.1.21
+    indexes:
+    - labelname: ifDescr
+      type: gauge
+    lookups:
+    - labels:
+      - ifDescr
+      labelname: ifDescr
+      oid: 1.3.6.1.2.1.2.2.1.2
+      type: DisplayString
+  - name: hrStorageIndex
+    oid: 1.3.6.1.2.1.25.2.3.1.1
+    type: gauge
+    help: A unique value for each logical storage area contained by the host. - 1.3.6.1.2.1.25.2.3.1.1
+    indexes:
+    - labelname: hrStorageIndex
+      type: gauge
+  - name: hrStorageDescr
+    oid: 1.3.6.1.2.1.25.2.3.1.3
+    type: DisplayString
+    help: A description of the type and instance of the storage described by this
+      entry. - 1.3.6.1.2.1.25.2.3.1.3
+    indexes:
+    - labelname: hrStorageIndex
+      type: gauge
+  - name: hrStorageAllocationUnits
+    oid: 1.3.6.1.2.1.25.2.3.1.4
+    type: gauge
+    help: The size, in bytes, of the data objects allocated from this pool - 1.3.6.1.2.1.25.2.3.1.4
+    indexes:
+    - labelname: hrStorageIndex
+      type: gauge
+  - name: hrStorageSize
+    oid: 1.3.6.1.2.1.25.2.3.1.5
+    type: gauge
+    help: The size of the storage represented by this entry, in units of hrStorageAllocationUnits.
+      - 1.3.6.1.2.1.25.2.3.1.5
+    indexes:
+    - labelname: hrStorageIndex
+      type: gauge
+  - name: hrStorageUsed
+    oid: 1.3.6.1.2.1.25.2.3.1.6
+    type: gauge
+    help: The amount of the storage represented by this entry that is allocated, in
+      units of hrStorageAllocationUnits. - 1.3.6.1.2.1.25.2.3.1.6
+    indexes:
+    - labelname: hrStorageIndex
+      type: gauge
+  - name: hrStorageAllocationFailures
+    oid: 1.3.6.1.2.1.25.2.3.1.7
+    type: counter
+    help: The number of requests for storage represented by this entry that could
+      not be honored due to not enough storage - 1.3.6.1.2.1.25.2.3.1.7
+    indexes:
+    - labelname: hrStorageIndex
+      type: gauge
+  - name: hrProcessorLoad
+    oid: 1.3.6.1.2.1.25.3.3.1.2
+    type: gauge
+    help: The average, over the last minute, of the percentage of time that this processor
+      was not idle. - 1.3.6.1.2.1.25.3.3.1.2
+    indexes:
+    - labelname: hrDeviceIndex
+      type: gauge

@@ -1,0 +1,19 @@
+# Copyright (c) 2017 Dell Inc.
+---
+galaxy_info:
+  author: Dell EMC Networking Engineering 
+  description: The dellos-aaa role facilitates the configuration of Authentication Authorization Acccounting (AAA) attributes in devices running Dell EMC Networking Operating Systems. 
+  license:  Apache 2.0
+  min_ansible_version: 2.2
+
+  platforms:
+  - name: Dell OS9
+  - name: Dell OS10
+
+  galaxy_tags:
+    - Networking
+    - Dell 
+    - EMC
+    - OS9
+    - OS10
+    - DellEMC

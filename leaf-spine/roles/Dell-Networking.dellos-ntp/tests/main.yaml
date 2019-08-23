@@ -1,0 +1,40 @@
+---
+# vars file for Dell-Networking.dellos-ntp, below gives a sample configuration
+
+# Sample variables for dellos10 device
+dellos_ntp:
+    source: ethernet 1/1/2
+    master: 5
+    authenticate: true
+    authentication_key:
+      - key_num: 123
+        key_string_type: 7
+        key_string: test
+        state: present
+    trusted_key:
+      - key_num: 1323
+        state: present
+    server:
+      - ip: 2.2.2.2
+        key: 345
+        prefer: true
+        state: present
+    intf:
+      ethernet 1/1/2:
+        disable: true
+        broadcast: true
+
+# Sample variables for dellos6 device
+dellos_ntp:
+    server:
+      - ip: 2.2.2.2
+        state: present
+
+# Sample variables for dellos9 device
+dellos_ntp:
+    server:
+      - ip: 2.2.2.2
+        vrf:
+          - test
+          - tes
+        state: present

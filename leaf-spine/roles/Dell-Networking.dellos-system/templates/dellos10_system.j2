@@ -1,0 +1,115 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{#############################################
+
+Purpose:
+Configure system commands for dellos10 Devices
+
+dellos_system:
+    hostname: os10
+    hardware_forwarding: scaled-l3-routes
+    hash_algo:
+      algo:
+        - name: lag
+          mode: crc
+          state: present
+        - name: ecmp
+          mode: xor
+          state: present
+    load_balance:
+        ingress_port: true
+        ip_selection:
+          - field: source-ip
+            state: present
+        ipv6_selection:
+          - field: source-ip
+            state: present
+        mac_selection:
+          - field: source-mac
+            state: present
+        tcp_udp_selection:
+          - field: l4-source-port
+            state: present
+
+
+###############################################}
+{% if dellos_system is defined and dellos_system %}
+{% if dellos_system.hostname is defined and dellos_system.hostname %}
+hostname {{ dellos_system.hostname }}
+{% endif %}
+{% for key,value in dellos_system.iteritems() %}
+  {% if key == "hardware_forwarding" %}
+    {% if value %}
+hardware forwarding-table mode {{ value }}
+    {% else %}
+no hardware forwarding-table mode
+    {% endif %}
+  {% elif key == "hash_algo" and value %}
+    {% if value.algo is defined and value.algo %}
+      {% for item in value.algo %}
+        {% if item.name is defined and item.name %}
+          {% if item.mode is defined and item.mode %}
+            {% if item.state is defined and item.state == "absent" %}
+no hash-algorithm {{ item.name }} {{ item.mode }}
+            {% else %}
+hash-algorithm {{ item.name }} {{ item.mode }}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% elif key == "load_balance" and value %}
+    {% if value.ingress_port is defined %}
+      {% if value.ingress_port %}
+load-balancing ingress-port enable
+      {% else %}
+no load-balancing ingress-port enable
+      {% endif %}
+    {% endif %}
+    {% if value.ip_selection is defined and value.ip_selection %}
+      {% for listitem in value.ip_selection %}
+       {% if listitem.field is defined and listitem.field %}
+          {% if listitem.state is defined and listitem.state == "absent" %}
+no load-balancing ip-selection {{ listitem.field }}
+          {% else %}
+load-balancing ip-selection {{ listitem.field }}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if value.ipv6_selection is defined and value.ipv6_selection %}
+      {% for listitem in value.ipv6_selection %}
+        {% if listitem.field is defined and listitem.field %}
+          {% if listitem.state is defined and listitem.state == "absent" %}
+no load-balancing ipv6-selection {{ listitem.field }}
+          {% else %}
+load-balancing ipv6-selection {{ listitem.field }}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if value.mac_selection is defined and value.mac_selection %}
+      {% for listitem in value.mac_selection %}
+        {% if listitem.field is defined and listitem.field %}
+          {% if listitem.state is defined and listitem.state == "absent" %}
+no load-balancing mac-selection {{ listitem.field }}
+          {% else %}
+load-balancing mac-selection {{ listitem.field }}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if value.tcp_udp_selection is defined and value.tcp_udp_selection %}
+      {% for listitem in value.tcp_udp_selection %}
+        {% if listitem.field is defined and listitem.field %}
+          {% if listitem.state is defined and listitem.state == "absent" %}
+no load-balancing tcp-udp-selection {{ listitem.field }}
+          {% else %}
+load-balancing tcp-udp-selection {{ listitem.field }}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+  {% endif %}
+{% endfor %}
+{% endif %}

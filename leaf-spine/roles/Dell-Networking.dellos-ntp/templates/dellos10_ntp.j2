@@ -1,0 +1,121 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{#############################################
+
+Purpose:
+Configure NTP commands for dellos10 Devices
+
+dellos_ntp:
+      source: ethernet 1/1/2
+      master: 5
+      authenticate: true
+      authentication_key:
+        - key_num: 123
+          key_string_type: 7
+          key_string: test
+          state: present
+      trusted_key:
+        - key_num: 1323
+          state: present
+      server:
+        - ip: 2.2.2.2
+          key: 345
+          prefer: true
+          state: present
+      intf:
+        ethernet 1/1/2:
+          disable: true
+          broadcast: true
+
+
+###############################################}
+{% if dellos_ntp is defined and dellos_ntp %}
+    {% if dellos_ntp.source is defined %}
+      {% if dellos_ntp.source %}
+ntp source {{ dellos_ntp.source }}
+      {% else %}
+no ntp source
+      {% endif %}
+    {% endif %}
+    {% if dellos_ntp.master is defined %}
+      {% if dellos_ntp.master %}
+ntp master {{ dellos_ntp.master }}
+      {% else %}
+no ntp master
+      {% endif %}
+    {% endif %}
+    {% if dellos_ntp.authenticate is defined %}
+      {% if dellos_ntp.authenticate %}
+ntp authenticate
+      {% else %}
+no ntp authenticate
+      {% endif %}
+    {% endif %}
+    {% if dellos_ntp.server is defined and dellos_ntp.server %}
+      {% for item in dellos_ntp.server %}
+        {% if item.ip is defined and item.ip %}
+          {% if item.state is defined and item.state == "absent" %}
+no ntp server {{ item.ip }}
+          {% else %}
+            {% if item.key is defined and item.key %}
+              {% if item.prefer is defined and item.prefer %}
+ntp server {{ item.ip }} key {{ item.key }} prefer
+              {% else %}
+ntp server {{ item.ip }} key {{ item.key }}
+              {% endif %}
+            {% else %}
+              {% if item.prefer is defined and item.prefer %}
+ntp server {{ item.ip }} prefer
+              {% else %}
+ntp server {{ item.ip }}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if dellos_ntp.authentication_key is defined and dellos_ntp.authentication_key %}
+      {% for item in dellos_ntp.authentication_key %}
+        {% if item.key_num is defined and item.key_num %}
+          {% if item.state is defined and item.state == "absent" %}
+no ntp authentication-key {{ item.key_num }}
+          {% else %}
+            {% if item.key_string_type is defined and item.key_string_type >= 0 %}
+              {% if item.key_string is defined and item.key_string %}
+ntp authentication-key {{ item.key_num }} md5 {{ item.key_string_type }} {{ item.key_string }}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if dellos_ntp.trusted_key is defined and dellos_ntp.trusted_key %}
+      {% for item in dellos_ntp.trusted_key %}
+        {% if item.key_num is defined and item.key_num %}
+          {% if item.state is defined and item.state == "absent" %}
+no ntp trusted-key {{ item.key_num }}
+          {% else %}
+ntp trusted-key {{ item.key_num }}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if dellos_ntp.intf is defined and dellos_ntp.intf %}
+      {% for key in dellos_ntp.intf.keys() %}
+interface {{ key }}
+        {% if dellos_ntp.intf[key].disable is defined %}
+          {% if dellos_ntp.intf[key].disable %}
+ ntp disable
+          {% else %}
+ no ntp disable
+          {% endif %}
+        {% endif %}
+        {% if dellos_ntp.intf[key].broadcast is defined %}
+          {% if dellos_ntp.intf[key].broadcast %}
+ ntp broadcast client
+          {% else %}
+ no ntp broadcast client
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+{% endif %}

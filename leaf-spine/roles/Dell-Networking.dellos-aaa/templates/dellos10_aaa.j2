@@ -1,0 +1,85 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{#############################################
+
+Purpose:
+Configure AAA commands for dellos10 Devices
+
+dellos_aaa:
+  radius_server:
+        retransmit: 5
+        timeout: 10
+        host:
+          - ip: 2001:4898:f0:f09b::1001
+            key: 0
+            auth_port: 3
+            state: present
+  aaa_authentication:
+        local_auth:
+          radius: true
+        radius_auth:
+          local: true
+        re_authenticate: true
+
+##################################################}
+{% if dellos_aaa is defined and dellos_aaa %}
+  {% if dellos_aaa.radius_server is defined and dellos_aaa.radius_server %} 
+    {% set item = dellos_aaa.radius_server %}
+      {% if item.retransmit is defined and item.retransmit %}
+radius-server retransmit {{ item.retransmit }}
+      {% else %}
+no radius-server retransmit 
+      {% endif %}
+      {% if item.timeout is defined and item.timeout %}
+radius-server timeout {{ item.timeout }}
+      {% else %}
+no radius-server timeout
+      {% endif %}
+      {% if item.host is defined and item.host %}
+        {% for it in item.host %}
+          {% if it.ip is defined and it.ip %}
+            {% if it.state is defined and it.state == "absent" %}
+no radius-server host {{ it.ip }}
+            {% else %}
+              {% if it.key is defined and it.key and it.auth_port is defined and it.auth_port %}
+radius-server host {{ it.ip }} key {{ it.key }} auth-port {{ it.auth_port }}
+              {% elif it.key is defined and it.key  %}
+radius-server host {{ it.ip }} key {{ it.key }}      
+              {% elif it.auth_port is defined and it.auth_port %}                  
+radius-server host {{ it.ip }} auth-port  {{ it.auth_port }}
+              {% else %}
+radius-server host {{ it.ip }}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+  {% endif %}
+  {% if dellos_aaa.aaa_authentication is defined and dellos_aaa.aaa_authentication %}
+    {% set aaa_vars = dellos_aaa.aaa_authentication %}
+    {% if aaa_vars.local_auth is defined and aaa_vars.local_auth %}
+      {% if aaa_vars.local_auth.radius is defined %}
+        {% if aaa_vars.local_auth.radius %}
+aaa authentication local radius
+        {% else %}
+aaa authentication local
+        {% endif %}
+      {% endif %}
+    {% elif aaa_vars.radius_auth is defined and aaa_vars.radius_auth %}
+      {% if aaa_vars.radius_auth.local is defined %}
+        {% if aaa_vars.radius_auth.local %}
+aaa authentication radius local
+        {% else %}
+aaa authentication radius
+        {% endif %}
+      {% endif %}
+    {% endif %}
+    {% if aaa_vars.re_authenticate is defined %}
+      {% if aaa_vars.re_authenticate %}
+aaa re-authenticate enable
+      {% else %}
+no aaa re-authenticate enable
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endif %} 
+

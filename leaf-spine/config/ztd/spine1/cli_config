@@ -1,0 +1,18 @@
+# PRE-CONFIG 
+# POST-CONFIG 
+snmp-server community public ro
+snmp-server contact NOC@dell.com
+snmp-server location delltechworld
+!
+clock timezone GMT 0 0
+!
+hostname SPINE-1
+!
+ip domain-list networks.dell.com
+ip name-server 8.8.8.8 1.1.1.1
+!
+ntp server 132.163.96.5 key 1 prefer
+ntp server 129.6.15.32
+!
+!
+logging server 10.22.0.99

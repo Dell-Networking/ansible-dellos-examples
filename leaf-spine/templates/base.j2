@@ -1,0 +1,150 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+!
+ip vrf default
+!
+{% if (name_server is defined and name_server) %}
+     {% if (name_server.vrf is defined and name_server.vrf ) %}
+          {% set ip_list = name_server.ip %}
+          {% if (ip_list is defined and ip_list ) %}
+                {% for ip_val in ip_list %}                                
+ip name-server vrf {{ name_server.vrf }} {{ ip_val }}
+                {% endfor %}
+          {% endif %}
+     {% endif %}
+{% endif %}
+!
+no multicast snooping flood-restrict
+!
+{% if linuxadmin_pwd is defined and linuxadmin_pwd %}
+system-user linuxadmin password {{ linuxadmin_pwd }}
+{% endif %}
+!
+no ip igmp snooping enable
+iscsi target port 860
+iscsi target port 3260
+no ipv6 mld snooping enable
+{% if users is defined and users %}
+  {% for item in users %}
+    {% if item.username is defined and item.username %}
+        {% if item.password is defined and item.password %}
+          {% if item.role is defined and item.role %}
+             {% if item.priv_level is defined and item.priv_level %}
+username {{ item.username }} password {{ item.password }} role {{ item.role }} priv-lvl {{ item.priv_level }}
+             {% else %}
+username {{ item.username }} password {{ item.password }} role {{ item.role }}
+             {% endif %}
+          {% else %}
+username {{ item.username }} password {{ item.password }}
+          {% endif %}
+        {% endif %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+!
+{% if tacacs_server_host_key_value is defined and tacacs_server_host_key_value %}
+tacacs-server host 172.21.8.228 key 9 {{ tacacs_server_host_key_value }}
+{% endif %}
+tacacs-server vrf management
+!
+aaa authentication login default local group tacacs+
+aaa authentication login console local
+!
+{% if wred_mem is defined and wred_mem %}
+wred mem
+{% endif %}
+!
+{% if port_group is defined and port_group %}
+   {% for pg in port_group %}
+     {% if pg.port_group_id is defined and pg.port_group_id %}
+port-group {{ pg.port_group_id }}
+       {% if pg.port_mode is defined and pg.port_mode %}
+         {% for mode in pg.port_mode %}
+ port {{ mode.interface }} mode Eth {{ mode.breakout_mode }}
+         {% endfor %}
+       {% endif %}
+     {% endif %}
+  {% endfor %}
+{% endif %}
+!
+{% if link_bundle_monitor is defined and link_bundle_monitor %}
+    {% for ports in link_bundle_monitor %}
+interface {{ ports }}
+ link-bundle-monitor
+!
+    {% endfor %}
+{% endif %}
+!
+{% if dellos_interface is defined and dellos_interface %}
+{% for key in dellos_interface.keys() %}
+  {% if key.startswith('ethernet')%}
+    {% set intf_vars = dellos_interface[key] %}
+    {% set port = key.split(" ") %}
+    {% set interface_key = port[0] + port[1] %}
+interface {{ interface_key }}
+ flowcontrol receive off
+  {% endif %}
+{% endfor %}
+{% endif %}
+!
+logging source-interface mgmt1/1/1
+logging server 172.21.62.197 severity log-warning vrf management
+logging server 172.21.62.184 severity log-warning vrf management
+!
+{% if dellos_vlt is defined and dellos_vlt %}
+  {% if dellos_vlt.domain is defined and dellos_vlt.domain %}
+vlt-domain {{ dellos_vlt.domain }}
+    {% if dellos_vlt.backup_destination is defined and dellos_vlt.backup_destination %}
+       {% if dellos_vlt.backup_vrf_instance is defined and dellos_vlt.backup_vrf_instance %}
+ backup destination {{ dellos_vlt.backup_destination }} vrf {{ dellos_vlt.backup_vrf_instance }}
+       {% else %}
+ backup destination {{ dellos_vlt.backup_destination }}
+       {% endif %}
+    {% endif %}
+    {% if dellos_vlt.primary_priority is defined and dellos_vlt.primary_priority %}
+ primary-priority {{ dellos_vlt.primary_priority }}
+    {% endif %}
+  {% endif %}
+{% endif %}
+!
+{% if dellos_bgp is defined and dellos_bgp %}
+{% set bgp_vars = dellos_bgp %}
+  {% if bgp_vars.asn is defined and bgp_vars.asn %}
+    {% set router_cmd = False %}
+    {% if bgp_vars.bfd is defined and bgp_vars.bfd %}
+router bgp {{ bgp_vars.asn }}
+ bfd all-neighbors
+      {% set router_cmd = True %}
+    {% endif %}
+    {% if bgp_vars.neighbor is defined and bgp_vars.neighbor %}
+      {% for neighbor in bgp_vars.neighbor %}
+        {% if neighbor.ip is defined and neighbor.ip %}
+          {% set tag_or_ip = neighbor.ip %}
+          {% if neighbor.bfd is defined and neighbor.bfd %}
+            {% if router_cmd is defined and router_cmd == False %}
+router bgp {{ bgp_vars.asn }}
+            {% set router_cmd = True %}
+            {% endif %}
+ neighbor {{ tag_or_ip }}
+  bfd
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+{% endif %}
+!
+snmp-server vrf management
+!
+{% if is_spine is defined and is_spine %}
+bfd enable
+bfd interval 500 min_rx 500 multiplier {{ bfd_multiplier }} role active
+{% endif %}
+!
+{% if is_exchange is defined and is_exchange %}
+allow unsupported-transceiver
+bfd enable
+bfd interval 500 min_rx 500 multiplier {{ bfd_multiplier }} role active
+hash-algorithm ecmp crc32LSB
+!
+{% endif %}
+!

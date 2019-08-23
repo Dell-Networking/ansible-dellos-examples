@@ -1,0 +1,118 @@
+---
+# vars file for Dell-Networking.dellos-system, below gives a sample configuration
+
+# Sample variables for dellos10 device
+dellos_system:
+    hostname: os10
+    hardware_forwarding: scaled-l3-routes
+    hash_algo:
+      algo:
+        - name: lag
+          mode: crc
+          state: present
+        - name: ecmp
+          mode: xor
+          state: present
+    load_balance:
+        ingress_port: true
+        ip_selection:
+          - field: source-ip
+            state: present
+        ipv6_selection:
+          - field: source-ip
+            state: present
+        mac_selection:
+          - field: source-mac
+            state: present
+        tcp_udp_selection:
+          - field: l4-source-port
+            state: present
+
+# Sample variables for dellos6 device
+dellos_system:
+    hostname: os6
+    enable_password: force10
+    mtu: 2000
+
+# Sample variables for dellos9 device
+dellos_system:
+    hostname: os9
+    enable_password: calvin
+    line_terminal:
+      vty 0:
+        exec_timeout: 40
+      vty 1:
+        exec_timeout: 40 200
+    service_passwd_encryption: true
+    banner:
+      exec: t hai t
+      login:
+        ack_enable: true
+        ack_prompt: testbanner
+        keyboard_interactive: true
+        banner_text: cloginbannerc
+      motd: t ansibletest t
+    hash_algo:
+      algo:
+        - name: lag
+          mode: xor1
+          stack_unit: 0
+          port_set: 0
+          state: present
+        - name: ecmp
+          mode: xor1
+          stack_unit: 0
+          port_set: 0
+          state: present
+      seed:
+        - value: 3
+          stack_unit: 0
+          port_set: 0
+          state: present
+        - value: 2
+          state: present
+    load_balance:
+      ingress_port: true
+      ip_selection: 
+        - field: vlan dest-ip
+          state: present
+      ipv6_selection: 
+        - field: dest-ipv6 vlan
+          state: present
+      tunnel:
+        hash_field:
+          - name: mac-in-mac
+            header: tunnel-header-mac
+            state: present
+    line_terminal:
+      vty 0:
+        exec_timeout: 40
+        exec_banner: true
+    clock:
+      summer_time:
+        timezone_name: PST
+        type: date
+        start_datetime: 2 jan 1993 22:33
+        end_datetime: 3 jan 2017 22:33
+        offset_mins: 20
+      timezone:
+        name: IST
+        offset_hours: -5
+        offset_mins: 20
+    reload_type:
+      auto_save: true
+      boot_type: normal-reload
+      boot_type_state: absent
+      config_scr_download: true
+      dhcp_timeout: 5
+      retry_count: 3
+      relay: true
+      relay_remote_id: ho
+      vendor_class_identifier: aa
+
+# Sample variables for dellos9 device to configure tcp-udp ports in load balance algorithm.
+dellos_system:
+    load_balance:
+      tcp_udp: true
+
+

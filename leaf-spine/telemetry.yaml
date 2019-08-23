@@ -1,0 +1,13 @@
+--- 
+
+
+- name: DEPLOY BASELINE CONFIG
+  hosts: datacenter
+  gather_facts: no
+  connection: network_cli
+
+  tasks:
+
+      - name: DEPLOY TELEMETRY CONFIG
+        dellos10_config:
+          src: "./templates/telemetry.j2"

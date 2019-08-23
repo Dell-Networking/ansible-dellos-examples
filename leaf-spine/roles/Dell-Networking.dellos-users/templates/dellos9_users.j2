@@ -1,0 +1,123 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{#############################################
+
+Purpose:
+Configure users commands for dellos9 Devices
+
+dellos_users:
+   - userrole: role1
+     userrole_state: present
+   - username: test
+     password: test
+     pass_key: 7
+     access_class: a1
+     role: sysadmin
+     privilege: 0
+     state: present
+   - username: u1
+     password: false
+     privilege: 1
+     access_class: a1
+     role: netadmin
+     state: present
+   - username: u2
+     secret: test1
+     secret_key : 0
+     access_class: a2
+     privilege: 3
+     role: sysadmin
+     state: present
+      
+###################################################}
+{% if dellos_users is defined and dellos_users %}
+{% for item in dellos_users %}
+  {% if item.userrole is defined and item.userrole %}
+    {% if item.userrole_state is defined and item.userrole_state == "absent" %}
+      {% for item in dellos_users %}
+        {% if item.username is defined and item.username %}
+          {% if item.state is defined and item.state == "absent" %}
+no username {{ item.username }}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+no userrole {{ item.userrole }}
+    {% else %}
+userrole {{ item.userrole }}
+    {% endif %}
+  {% endif %}
+  {% if item.username is defined and item.username %}
+    {% if item.state is defined and item.state == "absent" %}
+no username {{ item.username }}
+    {% else %}
+      {% if item.password is defined and item.password %}
+        {% if item.pass_key is defined and item.pass_key %}
+{% set passwd = item.pass_key|string+" "+item.password %}
+        {% else %}
+{% set passwd = item.password %}
+        {% endif %}
+          {% if item.privilege is defined and item.privilege and item.access_class is defined and item.access_class and item.role is defined and item.role %}
+username {{ item.username }} password {{ passwd }} role {{ item.role }} privilege {{ item.privilege }} access-class {{ item.access_class }}
+          {% elif item.role is defined and item.role and item.privilege is defined and item.privilege %}
+username {{ item.username }} password {{ passwd }} role {{ item.role }} privilege {{ item.privilege }}
+          {% elif item.role is defined and item.role and item.access_class is defined and item.access_class %}
+username {{ item.username }} password {{ passwd }} role {{ item.role }} access-class {{ item.access_class }}
+          {% elif item.privilege is defined and item.privilege and item.access_class is defined and item.access_class %}
+username {{ item.username }} password {{ passwd }} privilege {{ item.privilege }} access-class {{ item.access_class }}
+          {% elif item.role is defined and item.role %}
+username {{ item.username }} password {{ passwd }} role {{ item.role }}
+          {% elif item.privilege is defined and item.privilege %}
+username {{ item.username }} password {{ passwd }}  privilege {{ item.privilege }}
+          {% elif item.access_class is defined and item.access_class %}
+username {{ item.username }} password {{ passwd }} access-class {{ item.access_class }}
+          {% else %}
+username {{ item.username }} password {{ passwd }}
+          {% endif %}
+      {% elif item.secret is defined and item.secret %}
+        {% if item.secret_key is defined and item.secret_key %}
+{% set passwd = item.secret_key|string+" " +item.secret %}
+        {% else %}
+{% set passwd = item.secret %}
+        {% endif %}
+          {% if item.privilege is defined and item.privilege and item.access_class is defined and item.access_class and item.role is defined and item.role %}
+username {{ item.username }} secret {{ passwd }} role {{ item.role }} privilege {{ item.privilege }} access-class {{
+ item.access_class }}
+          {% elif item.role is defined and item.role and item.privilege is defined and item.privilege %}
+username {{ item.username }} secret {{ passwd }} role {{ item.role }} privilege {{ item.privilege }}
+          {% elif item.role is defined and item.role and item.access_class is defined and item.access_class %}
+username {{ item.username }} secret {{ passwd }} role {{ item.role }} access-class {{ item.access_class }}
+          {% elif item.privilege is defined and item.privilege and item.access_class is defined and item.access_class %}
+username {{ item.username }} secret {{ passwd }} privilege {{ item.privilege }} access-class {{ item.access_class }}
+          {% elif item.role is defined and item.role %}
+username {{ item.username }} secret {{ passwd }} role {{ item.role }}
+          {% elif item.privilege is defined and item.privilege %}
+username {{ item.username }} secret {{ passwd }}  privilege {{ item.privilege }}
+          {% elif item.access_class is defined and item.access_class %}
+username {{ item.username }} secret {{ passwd }} access-class {{ item.access_class }}
+          {% else %}
+username {{ item.username }} secret {{ passwd }}
+          {% endif %}
+      {% else %}
+        {% if item.privilege is defined and item.privilege and item.access_class is defined and item.access_class and item.role is defined and item.role %}
+username {{ item.username }} nopassword role {{ item.role }} privilege {{ item.privilege }} access-class {{ item.access_class }}
+        {% elif item.role is defined and item.role and item.privilege is defined and item.privilege %}
+username {{ item.username }} nopassword role {{ item.role }} privilege {{ item.privilege }}
+        {% elif item.role is defined and item.role and item.access_class is defined and item.access_class %}
+username {{ item.username }} nopassword role {{ item.role }} access-class {{ item.access_class }}
+        {% elif item.privilege is defined and item.privilege and item.access_class is defined and item.access_class %}
+username {{ item.username }} nopassword privilege {{ item.privilege }} access-class {{ item.access_class }}
+        {% elif item.role is defined and item.role %}
+username {{ item.username }} nopassword role {{ item.role }}
+        {% elif item.privilege is defined and item.privilege %}
+username {{ item.username }} nopassword privilege {{ item.privilege }}
+        {% elif item.access_class is defined and item.access_class %}
+username {{ item.username }} nopassword access-class {{ item.access_class }}
+        {% else %}
+username {{ item.username }} nopassword
+        {% endif %}
+
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+{% endif %}
+

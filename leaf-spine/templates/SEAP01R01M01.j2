@@ -1,0 +1,775 @@
+!
+boot system stack-unit 1 primary system://B
+boot system stack-unit 1 secondary system://B
+boot system stack-unit 1 default system://A
+boot system stack-unit 2 primary system://B
+boot system stack-unit 2 secondary system://B
+boot system stack-unit 2 default system://A
+!
+hostname {{hostname}}
+!
+protocol lldp
+ advertise management-tlv system-capabilities system-description system-name
+!
+redundancy auto-synchronize full
+!
+{#enable password 7 {{enable_password}}
+!
+username {{ansible_ssh_user}}  password 7 {{admin_password}}
+username rk733y password 7 {{rk733ypasswd}} role sysadmin#}
+!
+stack-unit 1 provision S3048-ON
+!
+stack-unit 2 provision S3048-ON
+!
+stack-unit 1 stack-group 0
+{% if stack_group1 is defined %}
+stack-unit 1 stack-group {{stack_group1}}
+{% endif %}
+!
+interface GigabitEthernet 1/1
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/2
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/3
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/4
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/5
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/6
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/7
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/8
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/9
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/10
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/11
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/12
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/13
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/14
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/15
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/16
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/17
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/18
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/19
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/20
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/21
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/22
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/23
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/24
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/25
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/26
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/27
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/28
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/29
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/30
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/31
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/32
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/33
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/34
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/35
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/36
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/37
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/38
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/39
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/40
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/41
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/42
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/43
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/44
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/45
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/46
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/47
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 1/48
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface {{stackinterface}}
+ no ip address
+ mtu 9252
+!
+ port-channel-protocol {{portchannel_protocol}}
+  port-channel {{portchannel_number_to_another_stack}} mode {{portchannel_mode}}
+ no shutdown
+!
+interface {{uplinkinterface}}
+ ip address {{Uplink_IPAddress_To_Cisco}}
+ mtu 9252
+ ip access-group {{access_list_inbound}} in
+ ip access-group {{access_list_outbound}} out
+ no shutdown
+!
+
+interface TenGigabitEthernet 1/52
+ no ip address
+ shutdown
+!
+stack-unit 2 stack-group 1
+!
+interface GigabitEthernet 2/1
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/2
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/3
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/4
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/5
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/6
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/7
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/8
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/9
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/10
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/11
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/12
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/13
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/14
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/15
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/16
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/17
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/18
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/19
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/20
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/21
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/22
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface GigabitEthernet 2/23
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/24
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/25
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/26
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/27
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/28
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/29
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/30
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/31
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/32
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/33
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/34
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/35
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/36
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/37
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/38
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/39
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/40
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/41
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/42
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/43
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/44
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/45
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/46
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/47
+ no ip address
+ shutdown
+!
+interface GigabitEthernet 2/48
+ no ip address
+ shutdown
+!
+interface {{stackinterface1}}
+ no ip address
+ mtu 9252
+!
+ port-channel-protocol {{portchannel_protocol}}
+  port-channel {{portchannel_number_to_another_stack}} mode {{portchannel_mode}}
+ no shutdown
+!
+
+interface TenGigabitEthernet 2/51
+ no ip address
+ shutdown
+!
+interface TenGigabitEthernet 2/52
+ no ip address
+ shutdown
+!
+{#interface ManagementEthernet 1/1
+ no ip address
+ no shutdown#}
+!
+interface ManagementEthernet 2/1
+ no shutdown
+!
+interface ManagementEthernet 3/1
+ no shutdown
+!
+interface ManagementEthernet 4/1
+ no shutdown
+!
+interface ManagementEthernet 5/1
+ no shutdown
+!
+interface ManagementEthernet 6/1
+ no shutdown
+!
+interface Port-channel {{portchannel_number_to_another_stack}}
+ no ip address
+ mtu 9252
+ switchport
+ no shutdown
+!
+interface Vlan 1
+!untagged GigabitEthernet 1/11-1/12,1/25-1/48
+!
+interface Vlan {{iDRAC_vlan}}
+ description iDRAC vlan
+ ip address {{iDRAC_ip}}/{{iDRAC_subnet_mask}}
+ tagged Port-channel {{portchannel_number_to_another_stack}}
+ untagged GigabitEthernet {{iDRAC_port_range}}
+ untagged GigabitEthernet {{iDRAC_port_range1}}
+!
+ vrrp-group {{iDRAC_vrrp_group_number}}
+  virtual-address {{iDRAC_vrrp_virtual_address}}
+ no shutdown
+!
+interface Vlan {{management_vlan}}
+ description management vlan
+ ip address {{management_ip}}/{{management_subnet_mask}}
+ tagged Port-channel {{portchannel_number_to_another_stack}}
+ untagged GigabitEthernet {{management_port_range}}
+{% if management_port_range1 is defined %}
+ untagged GigabitEthernet {{management_port_range1}}
+{% endif %}
+!
+ vrrp-group {{management_vrrp_group_number}}
+  virtual-address {{management_vrrp_virtual_address}}
+ no shutdown
+!
+monitor session 1
+ flow-based enable
+!
+router bgp {{asn}}
+ network {{bgpnet1}}
+ network {{bgpnet2}}
+ bgp four-octet-as-support
+ neighbor {{bgpneighbor1}} remote-as {{remoteasn}}
+ neighbor {{bgpneighbor1}} no shutdown
+!
+
+ip access-list extended {{aclname}}
+ seq 5 permit ip host {{ipsrc}} {{ipdst}}
+ seq 10 permit tcp host {{tcpsrc}} {{ipdst}} eq {{tcpport1}}
+ seq 15 permit tcp host {{tcpsrc}} {{ipdst}} eq {{tcpport2}}
+ seq 20 permit tcp host {{tcpsrc}} host {{tcpdst1}} eq {{tcpport3}}
+ seq 25 permit tcp host {{tcpsrc}} host {{tcpdst2}} eq {{tcpport4}}
+ seq 30 permit tcp host {{tcpsrc}} host {{tcpdst3}} eq {{tcpport5}}
+ seq 35 permit tcp host {{tcpsrc}} host {{tcpdst4}} eq {{tcpport5}}
+ seq 40 permit tcp host {{tcpsrc}} host {{tcpdst5}} eq {{tcpport5}}
+ seq 45 permit tcp host {{tcpsrc}} host {{tcpdst6}} eq {{tcpport6}}
+ seq 50 permit tcp host {{tcpsrc}} host {{tcpdst7}} eq {{tcpport7}}
+ seq 55 permit tcp host {{tcpsrc}} host {{tcpdst8}} eq {{tcpport8}}
+ seq 60 permit udp host {{udpsrc1}} eq {{udpsrcport1}} {{ipdst}} gt {{udpport1}}
+ seq 65 permit udp host {{udpsrc2}} eq {{udpsrcport1}} {{ipdst}} gt {{udpport1}}
+ seq 70 permit udp host {{udpsrc3}} eq {{udpsrcport1}} {{ipdst}} gt {{udpport1}}
+ seq 75 permit udp host {{udpsrc4}} eq {{udpsrcport2}} {{ipdst}}
+ seq 80 permit udp host {{udpsrc5}} eq {{udpsrcport2}} {{ipdst}}
+ seq 85 permit udp host {{udpsrc6}} eq {{udpsrcport2}} {{ipdst}}
+ seq 90 permit tcp any {{ipdst}} ack
+ seq 95 permit tcp any {{ipdst}} rst
+ seq 100 permit icmp any {{ipdst}}
+ seq 105 permit tcp host {{tcpsrc1}} eq {{tcpsrcport1}} {{ipdst}}
+!
+
+ip access-list extended {{aclname1}}
+ seq 5 permit ip {{ipdst}} host {{ipsrc}}
+ seq 10 permit tcp {{ipdst}} host {{udpsrc1}} eq {{tcpport9}}
+ seq 15 permit tcp {{ipdst}} host {{udpsrc2}} eq {{tcpport9}}
+ seq 20 permit tcp {{ipdst}} host {{udpsrc3}} eq {{tcpport9}}
+ seq 25 permit tcp {{ipdst}} host {{tcpdst9}} eq {{tcpport10}}
+ seq 30 permit tcp {{ipdst}} host {{tcpdst9}} eq {{tcpport11}}
+ seq 35 permit udp {{ipdst}} gt {{udpport1}} host {{udpsrc1}} eq {{udpsrcport1}}
+ seq 40 permit udp {{ipdst}} gt {{udpport1}} host {{udpsrc2}} eq {{udpsrcport1}}
+ seq 45 permit udp {{ipdst}} gt {{udpport1}} host {{udpsrc3}} eq {{udpsrcport1}}
+ seq 50 permit udp {{ipdst}} host {{udpdst1}} eq {{udpport2}}
+ seq 55 permit udp {{ipdst}} host {{udpdst2}} eq {{udpport2}}
+ seq 60 permit udp {{ipdst}} host {{udpsrc4}} eq {{udpsrcport2}}
+ seq 65 permit udp {{ipdst}} host {{udpsrc5}} eq {{udpsrcport2}}
+ seq 70 permit udp {{ipdst}} host {{udpsrc6}} eq {{udpsrcport2}}
+ seq 75 permit tcp {{ipdst}} host {{tcpsrc}} ack
+ seq 80 permit tcp {{ipdst}} host {{tcpsrc}} rst
+ seq 85 permit icmp {{ipdst}} any
+ seq 90 permit udp {{ipdst}} host {{tcpsrc}} eq {{udpport2}}
+ seq 95 permit tcp {{ipdst}} host {{tcpsrc1}} eq {{tcpsrcport1}}
+ seq 100 permit udp {{ipdst}} host {{udpdst3}} eq {{udpport3}}
+ seq 110 permit tcp {{ipdst}} host {{tcpdst10}} eq {{tcpport12}}
+ seq 120 permit tcp {{ipdst}} host {{tcpdst11}} eq {{tcpport12}}
+ seq 130 permit tcp {{ipdst}} host {{tcpdst12}} eq {{tcpport12}}
+!
+
+ip domain-lookup
+ip name-server {{udpsrc1}}
+ip name-server {{udpsrc2}}
+ip name-server {{udpsrc3}}
+!
+{% if stack.priority is defined %}
+stack-unit 1 priority {{stack.priority}}
+{% endif %}
+{% if stack.priority1 is defined %}
+stack-unit 2 priority {{stack.priority1}}
+{% endif %}
+!
+no ip telnet server enable
+!
+ntp server {{udpsrc6}}
+ntp server {{udpsrc5}}
+ntp server {{udpsrc4}}
+ntp source Vlan {{management_vlan}} 
+ip tacacs source-interface Vlan {{management_vlan}}
+tacacs-server host {{tcpsrc1}} key 7 {{tacacs_key}}
+!
+aaa authentication login default local tacacs+
+aaa authorization exec default local tacacs+
+!
+{% if snmp_server is defined %}
+snmp-server community public ro
+snmp-server enable traps bgp
+snmp-server enable traps snmp authentication coldstart linkdown linkup syslog-reachable syslog-unreachable
+snmp-server enable traps vrrp
+snmp-server enable traps lacp
+snmp-server enable traps entity
+snmp-server enable traps stack
+snmp-server enable traps stp
+snmp-server enable traps ecfm
+snmp-server enable traps vlt
+snmp-server enable traps xstp
+snmp-server enable traps isis
+snmp-server enable traps config
+snmp-server enable traps envmon cam-utilization fan supply temperature
+snmp-server enable traps ecmp
+snmp-server enable traps mac
+{% endif %}
+!
+no ip source-route
+!
+ip icmp source-interface Vlan {{management_vlan}}
+!
+ip ssh server enable
+!
+{% if logging is defined %}
+logging {{loggingip}}
+{% endif %}
+!
+line console 0
+line vty 0
+line vty 1
+line vty 2
+line vty 3
+line vty 4
+line vty 5
+line vty 6
+line vty 7
+line vty 8
+line vty 9
+!
+reload-type
+ boot-type normal-reload
+ config-scr-download enable
+!
+end 

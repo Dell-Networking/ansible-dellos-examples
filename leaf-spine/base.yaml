@@ -1,0 +1,13 @@
+--- 
+# tasks file for base configuration
+
+   - name: Generating base configuration
+     template:
+        src: "./templates/base.j2"
+        dest: "{{ build_dir }}/base_{{hostname}}.conf.part"
+     when: (ansible_network_os is defined and ansible_network_os == "dellos10") and ((dellos_cfg_generate | default('False')) | bool)
+     register: generate_output
+
+   - name: DEPLOY BASE CONFIG FROM JINJA TEMPLATE
+     dellos10_config:
+       src: "./templates/base.j2"

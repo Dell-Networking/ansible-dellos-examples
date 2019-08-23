@@ -1,0 +1,102 @@
+---
+# vars file for Dell-Networking.dellos-vrrp, below gives a example configuration
+
+# Sample variables for dellos9 device
+dellos_vrrp:
+    fortyGigE 0/28:
+      vrrp:
+        delay_min: 4
+        delay_reload: 5
+      vrrp_group:
+        - group_id: 2
+          type: ipv6
+          description: "Interface-vrrp-ipv6"
+          virtual_address: 2001:4898:5808:ffa3::9
+          enable: true
+          priority: 120
+          preempt: false
+          track_interface:
+            - resource_id: 3
+              priority_cost: 25
+              state: present
+            - interface: port-channel 120
+              priority_cost: 20
+            - interface: fortyGigE 0/40
+              state: present
+          track_interface_state: present
+          adv_interval_centisecs: 200
+          hold_time_centisecs: 20
+          state: present
+        - group_id: 4
+          state: present
+          description: "Interface-vrrp4"
+          virtual_address: 10.28.0.2
+          enable: true
+          priority: 120
+          preempt: false
+          version: 3
+          track_interface:
+            - resource_id: 3
+              priority_cost: 25
+              state: present
+            - interface: port-channel 120
+              priority_cost: 20
+            - interface: fortyGigE 0/20
+              state: absent
+          track_interface_state: present
+          adv_interval_centisecs: 200
+          hold_time_centisecs: 200
+          authentication:
+            key: 0
+            key_string: vrrpkey
+            state: present
+        - group_id : 3
+          state: present
+          description: "Interface-vrrp3"
+          virtual_address: 10.28.0.3
+          enable: true
+          priority: 120
+          preempt: false
+# Sample variables for dellos10 device
+
+dellos_vrrp:
+    vrrp:
+      delay_reload: 2
+      version: 3
+    ethernet1/1/1:
+      vrrp_group:
+        - group_id: 2
+          type: ipv6
+          priority: 120
+          preempt: false
+          track_interface:
+            - resource_id: 3
+              priority_cost: 25
+              state: present
+          virtual_address:
+            - ip: 2001:4828:5808:ffa3::9
+              state: present
+            - ip: 3001:4828:5808:ffa3::9
+              state: present
+            - ip: 4001:4828:5808:ffa3::9
+              state: absent
+          adv_interval_centisecs: 200
+          state: present
+        - group_id: 4
+          virtual_address:
+            - ip: 4.1.1.1
+              state: present
+            - ip: 4.1.1.2
+              state: present
+            - ip: 4.1.1.3
+              state: absent
+          priority: 120
+          preempt: false
+          track_interface:
+            - resource_id: 3
+              priority_cost: 25
+              state: present
+          adv_interval_centisecs: 200
+          state: present
+    vlan100:
+      vrrp_active_active_mode: True

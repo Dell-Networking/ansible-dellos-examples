@@ -1,0 +1,94 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{####################################
+
+Purpose:
+Configure snmp commands for dellos6 Devices
+
+dellos_snmp:
+    snmp_contact:  test
+    snmp_location: Chennai
+    snmp_community:
+      - name: public
+        access_mode: ro
+        state: absent
+      - name: private
+        access_mode: rw
+        state: absent
+    snmp_traps: 
+      - name: all
+        state: present
+    snmp_host:
+      - ip: 4.4.4.4
+        communitystring: public
+        udpport: 1
+        state: absent
+
+#####################################}
+{% if dellos_snmp is defined and dellos_snmp %}
+
+{% for key,value in dellos_snmp|dictsort %}
+  {% if key=="snmp_contact" %}
+    {% if value %}
+snmp-server contact "{{ value }}"
+    {% else %}
+no snmp-server contact
+    {% endif %}
+  {% elif key == "snmp_location" %}
+    {% if value  %}
+snmp-server location "{{ value }}"
+    {% else %}
+no snmp-server location
+    {% endif %}
+  {% elif key == "snmp_community" %}
+    {% if value %}
+      {% for item in value %}
+        {% if item.name is defined and item.name %}
+          {% if item.state is defined and item.state == "absent" %}
+no snmp-server community {{ item.name }}
+          {% else %}
+            {% if item.access_mode is defined and item.access_mode %}
+snmp-server community "{{ item.name }}" {{ item.access_mode }}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% elif key == "snmp_host" and value %}
+    {% for item in value %}
+      {% if item.ip is defined and item.ip %}
+        {% if item.state is defined and item.state == "absent" %}
+no snmp-server host {{ item.ip }} traps
+        {% else %}
+          {% if item.communitystring is defined and item.communitystring %}
+            {% if item.udpport is defined and item.udpport %}
+snmp-server host {{ item.ip }} "{{ item.communitystring }}" udp-port {{ item.udpport }}
+            {% else %}
+snmp-server host {{ item.ip }} "{{ item.communitystring }}"
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endfor%}
+  {% elif key == "snmp_traps" %}
+    {% if value %}
+      {% for val in value %}
+        {% if val.name is defined and val.name %}
+          {% if val.state is defined and val.state == "absent" %}
+no snmp-server enable traps {{ val.name }}
+          {% else %}
+            {% if val.name == "all" %}
+              {% set trap_list = ['bgp state-changes limited','dvmrp','captive-portal','pim','captive-portal client-auth-failure','captive-portal client-connect','captive-portal client-db-full','captive-portal client-disconnect'] %}
+              {% for name in trap_list %}
+snmp-server enable traps {{ name }}
+              {% endfor %}
+            {% else %}
+snmp-server enable traps {{ val.name }}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+  {% endif %}
+{% endfor %}
+{% endif %}

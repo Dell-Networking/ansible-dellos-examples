@@ -1,0 +1,19 @@
+!
+telemetry
+ enable
+ !
+ destination-group {{ destination_group }}
+  destination {{ destination_ip }} {{ destination_port }}
+ !
+ subscription-profile {{ subscription_profile }}
+  destination-group dg1
+  sensor-group interface 15000
+  sensor-group lag 0
+  sensor-group system 30000
+  sensor-group bgp 15000
+  sensor-group bgp-peer 0
+  sensor-group environment 30000
+  sensor-group device 30000
+  sensor-group buffer 15000
+  encoding gpb
+  transport grpc no-tls

@@ -1,0 +1,30 @@
+---
+
+loopback0_ip: 172.28.65.159/32
+
+intf_1_ip: 192.168.0.5/31
+intf_2_ip: 192.168.0.7/31
+intf_3_ip: 192.168.0.9/31
+intf_4_ip: 192.168.0.11/31
+intf_30_ip: 172.21.4.69/31
+intf_31_ip: 172.21.4.67/31
+intf_32_ip: 172.17.4.69/31
+intf_33_ip: 172.17.4.67/31
+intf_35_1_ip: 172.28.65.151/31
+intf_36_1_ip: 172.28.65.155/31
+
+tacacs_server_host_key_value: 1a385452d1463faba0d7deecc00e29f61c691a7984184763396e4528dee16fd4
+
+prefix_list_net_num_1: 172.21.65.159
+
+bgp_neigh_spine_ip_1: 192.168.0.4
+bgp_neigh_spine_ip_2: 192.168.0.6
+bgp_neigh_spine_ip_3: 192.168.0.8
+bgp_neigh_spine_ip_4: 192.168.0.10
+bgp_neigh_cisco1_ip_1: 172.21.4.68
+bgp_neigh_cisco1_ip_2: 172.21.4.66
+bgp_neigh_cisco2_ip_1: 172.17.4.68
+bgp_neigh_cisco2_ip_2: 172.17.4.66
+bgp_neigh_3tier_ip_1: 172.28.65.150
+bgp_neigh_3tier_ip_2: 172.28.65.154
+

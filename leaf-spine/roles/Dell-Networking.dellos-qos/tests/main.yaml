@@ -1,0 +1,12 @@
+---
+# Sample variables for dellos10 device
+dellos_qos:
+  policy_map:
+   - name: testpolicy
+     type: qos
+     state: present
+  class_map:
+   - name: testclas
+     type: qos
+     state: present
+

@@ -1,0 +1,128 @@
+---
+# vars file for Dell-Networking.dellos-xstp, below gives a sample configuration
+
+# Sample variables for dellos9 device
+dellos_xstp:
+    type: rstp
+    enable: true
+    stp: 
+      bridge_priority: 4096
+      state: present
+
+    rstp:
+      bridge_priority: 4096
+      state: present
+
+    pvst:
+      vlan:
+        - range_or_id: 10
+          bridge_priority: 4096
+      state: present
+
+    mstp:
+      mstp_instances:
+        - number: 1
+          vlans: 10,12
+          bridge_priority: 4096
+          vlans_state: present
+      state: present
+    intf:
+      fortyGigE 1/25
+        stp_type:
+          - stp
+          - mstp
+        edge_port: true
+
+# Sample variables for dellos6 device
+dellos_xstp:
+    type: stp
+    enable: true
+    stp:
+      bridge_priority: 4096
+    pvst:
+      vlan:
+        - range_or_id: 10
+          bridge_priority: 4096
+    mstp:
+      mstp_instances:
+        - number: 1
+          vlans: 10,12
+          bridge_priority: 4096
+          vlans_state: present
+    intf:
+      name: Gi1/0/5
+        edge_port: true
+
+# Sample variables for dellos10 device
+dellos_xstp:
+    type: rstp
+    enable: true
+    path_cost: true
+    mac_flush_timer: 4
+    rstp:
+      max_age: 6
+      hello_time: 7
+      forward_time: 7
+      force_version: stp
+      bridge_priority: 4096
+      mac_flush_threshold: 5
+    pvst:
+      vlan:
+        - range_or_id: 10
+          max_age: 6
+          enable: true
+          hello_time: 7
+          forward_time: 7
+          bridge_priority: 4096
+          mac_flush_threshold: 9
+    mstp:
+      max_age: 6
+      max_hops: 6
+      hello_time: 7
+      forward_time: 7
+      force_version: stp
+      mstp_instances:
+        - number_or_range: 1
+          enable: true
+          mac_flush_threshold: 9
+          bridge_priority: 4096
+      mst_config:
+         name: cfg1
+         revision: 5
+         cfg_list:
+           - number: 1
+             vlans: 10,12
+             vlans_state: present
+    intf:
+      ethernet 1/1/8:
+        edge_port: true
+        bpdu_filter: true
+        bpdu_guard: true
+        guard: loop
+        enable: true
+        link_type: point-to-point
+        msti:
+          - instance_number: 1
+            priority: 32
+            cost: 1
+        rstp:
+          priority: 32
+          cost: 7
+        vlan:
+          - range_or_id: 6
+            priority: 16
+            cost: 8
+
+# Sample variables for dellos10 devices to configure root in pvst and mst
+  
+dellos_xstp:
+    pvst:
+      vlan:
+        - range_or_id: 10
+          root: primary
+    mstp:
+      mstp_instances:
+        - number_or_range: 1
+          root: secondary
+
+

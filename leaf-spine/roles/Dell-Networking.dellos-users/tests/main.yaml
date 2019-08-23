@@ -1,0 +1,46 @@
+---
+# vars file for Dell-Networking.dellos-users, below gives a sample configuration
+
+# Sample variables for dellos9 device
+dellos_users:
+   - userrole: role1
+     userrole_state: present
+   - username: test
+     password: test
+     pass_key: 7
+     access_class: a1
+     role: role1
+     privilege: 0
+     state: present
+   - username: u1
+     password: false
+     privilege: 1
+     access_class: a1
+     role: netadmin
+     state: present
+   - username: u2
+     secret: test1
+     secret_key : 0
+     access_class: a2
+     privilege: 3
+     role: sysadmin
+     state: present
+
+# Sample variables for dellos6 device
+dellos_users:
+   - username: test
+     password: test
+     privilege: 0
+     state: absent
+
+# Sample variables for dellos10 device
+dellos_users:
+  - username: test
+    password: test
+    role: sysadmin
+    state: present
+  - username: u1
+    password: rtft4
+    role: netadmin
+    state : present
+

@@ -1,0 +1,400 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+{###############################################
+PURPOSE: Configure xSTP commands for dellos10 devices
+
+dellos_xstp:
+    type: rstp
+    enable: true
+    mac_flush_timer: 4    
+    rstp:
+      max_age: 6
+      hello_time: 7
+      forward_time: 7
+      force_version: stp  
+      bridge_priority: 4096
+      mac_flush_threshold: 5 
+    pvst:
+      vlan:
+        - range_or_id: 10
+          max_age: 6
+          enable: true
+          hello_time: 7
+          forward_time: 7
+          bridge_priority: 4096
+          mac_flush_threshold: 9
+    mstp:
+      max_age: 6
+      max_hops: 6
+      hello_time: 7
+      forward_time: 7
+      force_version: stp 
+      mstp_instances:
+        - number_or_range: 1 
+          enable: true
+          mac_flush_threshold: 9
+          bridge_priority: 4096
+      mst_config:
+         name: cfg1
+         revision: 5
+         cfg_list:
+           - number: 1
+             vlans: 10,12
+             vlans_state: present
+    intf:
+      ethernet 1/1/8:
+        edge_port: true
+        bpdu_filter: true
+        bpdu_guard: true
+        guard: loop 
+        enable: true
+        link_type: point-to-point
+        msti:
+          - instance_number: 1
+            priority: 32
+            cost: 1
+        rstp:
+          priority: 32
+          cost: 7
+        vlan:
+          - range_or_id: 6
+            priority: 16
+            cost: 8
+#################################################}
+
+{% if dellos_xstp is defined and dellos_xstp %}
+{% set xstp_vars = dellos_xstp %}
+{% if xstp_vars.type is defined %}
+  {% if xstp_vars.type %}
+spanning-tree mode {{ xstp_vars.type }}
+  {% else %}
+no spanning-tree mode r
+  {% endif %}
+{% endif %}
+{% if xstp_vars.enable is defined %}
+  {% if xstp_vars.enable %}
+no spanning-tree disable
+  {% else %}
+spanning-tree disable
+  {% endif %}
+{% endif %}
+{% if xstp_vars.mac_flush_timer is defined %}
+  {% if xstp_vars.mac_flush_timer == 0 or xstp_vars.mac_flush_timer %}
+spanning-tree mac-flush-timer {{ xstp_vars.mac_flush_timer }}
+  {% else %}
+no spanning-tree mac-flush-timer
+  {% endif %}
+{% endif %}
+
+{% if xstp_vars.rstp is defined and xstp_vars.rstp %}
+  {% set val = xstp_vars.rstp %}
+    {% if val.bridge_priority is defined %}
+      {% if val.bridge_priority == 0 or val.bridge_priority %}
+spanning-tree rstp priority {{ val.bridge_priority }}
+      {% else %}
+no spanning-tree rstp priority
+      {% endif %}
+    {% endif %}
+    {% if val.forward_time is defined %}
+      {% if val.forward_time %}
+spanning-tree rstp forward-time {{ val.forward_time }}
+      {% else %}
+no spanning-tree rstp forward-time
+      {% endif %}
+    {% endif %}
+    {% if val.hello_time is defined %}
+      {% if val.hello_time %}
+spanning-tree rstp hello-time {{ val.hello_time }}
+      {% else %}
+no spanning-tree rstp hello-time
+      {% endif %}
+    {% endif %}
+    {% if val.max_age is defined %}
+      {% if val.max_age %}
+spanning-tree rstp max-age {{ val.max_age }}
+      {% else %}
+no spanning-tree rstp max-age
+      {% endif %}
+    {% endif %}
+    {% if val.mac_flush_threshold is defined %}
+      {% if val.mac_flush_threshold %}
+spanning-tree rstp mac-flush-threshold {{ val.mac_flush_threshold }}
+      {% else %}
+no spanning-tree rstp mac-flush-threshold
+      {% endif %}
+    {% endif %}
+    {% if val.force_version is defined %}
+      {% if val.force_version %}
+spanning-tree rstp force-version {{ val.force_version }}
+      {% else %}
+no spanning-tree rstp force-version
+      {% endif %}
+    {% endif %}
+{% endif %}
+
+{% if xstp_vars.pvst is defined and xstp_vars.pvst %}
+  {% set val = xstp_vars.pvst %}
+    {% if val.vlan is defined and val.vlan %}
+      {% for vlan in val.vlan %}
+        {% if vlan.range_or_id is defined and vlan.range_or_id %}
+          {% if vlan.bridge_priority is defined %}
+            {% if vlan.bridge_priority == 0 or vlan.bridge_priority  %}
+spanning-tree vlan {{ vlan.range_or_id }} priority {{ vlan.bridge_priority }}
+            {% else %}
+no spanning-tree vlan {{ vlan.range_or_id }} priority 
+            {% endif %}
+          {% endif %}
+          {% if vlan.enable is defined %}
+            {% if vlan.enable %}
+no spanning-tree vlan {{ vlan.range_or_id }} disable
+            {% else %}
+spanning-tree vlan {{ vlan.range_or_id }} disable
+            {% endif %}
+          {% endif %}
+
+          {% if vlan.forward_time is defined %}
+            {% if vlan.forward_time %}
+spanning-tree vlan {{ vlan.range_or_id }} forward-time {{ vlan.forward_time }}
+            {% else %}
+no spanning-tree vlan {{ vlan.range_or_id }} forward-time
+            {% endif %}
+          {% endif %}
+          {% if vlan.hello_time is defined %}
+            {% if vlan.hello_time %}
+spanning-tree vlan {{ vlan.range_or_id }} hello-time {{ vlan.hello_time }}
+            {% else %}
+no spanning-tree vlan {{ vlan.range_or_id }} hello-time
+            {% endif %}
+          {% endif %}
+          {% if vlan.max_age is defined %}
+            {% if vlan.max_age %}
+spanning-tree vlan {{ vlan.range_or_id }} max-age {{ vlan.max_age }}
+            {% else %}
+no spanning-tree vlan {{ vlan.range_or_id }} max-age
+            {% endif %}
+          {% endif %}
+          {% if vlan.mac_flush_threshold is defined %}
+            {% if vlan.mac_flush_threshold %}
+spanning-tree vlan {{ vlan.range_or_id }} mac-flush-threshold {{ vlan.mac_flush_threshold }}
+            {% else %}
+no spanning-tree vlan {{ vlan.range_or_id }} mac-flush-threshold
+            {% endif %}
+          {% endif %}
+          {% if vlan.root is defined %}
+            {% if vlan.root %}
+spanning-tree vlan {{ vlan.range_or_id }} root {{ vlan.root }}
+            {% else %}
+no spanning-tree vlan {{ vlan.range_or_id }} root p
+            {% endif %}
+          {% endif %}
+
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+{% endif %}
+{% if xstp_vars.mstp is defined and xstp_vars.mstp %}
+  {% set val = xstp_vars.mstp %}
+    {% if val.forward_time is defined %}
+      {% if val.forward_time %}
+spanning-tree mst forward-time {{ val.forward_time }}
+      {% else %}
+no spanning-tree mst forward-time
+      {% endif %}
+    {% endif %}
+    {% if val.hello_time is defined %}
+      {% if val.hello_time %}
+spanning-tree mst hello-time {{ val.hello_time }}
+      {% else %}
+no spanning-tree mst hello-time
+      {% endif %}
+    {% endif %}
+    {% if val.max_age is defined %}
+      {% if val.max_age %}
+spanning-tree mst max-age {{ val.max_age }}
+      {% else %}
+no spanning-tree mst max-age
+      {% endif %}
+    {% endif %}
+    {% if val.max_hops is defined %}
+      {% if val.max_hops %}
+spanning-tree mst max-hops {{ val.max_hops }}
+      {% else %}
+no spanning-tree mst max-hops
+      {% endif %}
+    {% endif %}
+    {% if val.force_version is defined %}
+      {% if val.force_version %}
+spanning-tree mst force-version {{ val.force_version }}
+      {% else %}
+no spanning-tree mst force-version
+      {% endif %}
+    {% endif %}
+
+    {% if val.mstp_instances is defined and val.mstp_instances %}
+      {% for instance in val.mstp_instances %}
+        {% if instance.number_or_range is defined and instance.number_or_range %}
+          {% if instance.bridge_priority is defined %}
+            {% if instance.bridge_priority ==0 or instance.bridge_priority  %}
+spanning-tree mst {{ instance.number_or_range }} priority {{ instance.bridge_priority }}
+            {% else %}
+no spanning-tree mst {{ instance.number_or_range }} priority
+            {% endif %}
+          {% endif %}
+          {% if instance.enable is defined %}
+            {% if instance.enable %}
+no spanning-tree mst {{ instance.number_or_range }} disable
+            {% else %}
+spanning-tree mst {{ instance.number_or_range }} disable
+            {% endif %}
+          {% endif %}
+          {% if instance.mac_flush_threshold is defined %}
+            {% if instance.mac_flush_threshold %}
+spanning-tree mst {{ instance.number_or_range }} mac-flush-threshold {{ instance.mac_flush_threshold }}
+            {% else %}
+no spanning-tree mst {{ instance.number_or_range }} mac-flush-threshold
+            {% endif %}
+          {% endif %}
+          {% if instance.root is defined %}
+            {% if instance.root %}
+spanning-tree mst {{ instance.number_or_range }} root {{ instance.root }}
+            {% else %}
+no spanning-tree mst {{ instance.number_or_range }} root p
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if val.mst_config is defined and val.mst_config %}
+spanning-tree mst configuration
+      {% if val.mst_config.name is defined %}
+        {% if val.mst_config.name %}
+ name {{ val.mst_config.name }}
+        {% else %}
+ no name
+        {% endif %}
+      {% endif %}
+      {% if val.mst_config.revision is defined %}
+        {% if val.mst_config.revision %}
+ revision {{ val.mst_config.revision }}
+        {% else %}
+ no revision
+        {% endif %}
+      {% endif %}
+      {% for instance in val.mst_config.cfg_list %}
+        {% if instance.number is defined and instance.number %}
+          {% if instance.vlans is defined and instance.vlans %}
+            {% if instance.vlans_state is defined and instance.vlans_state == "absent" %}
+ no instance {{ instance.number }} vlan {{ instance.vlans }}
+            {% else %}
+ instance {{ instance.number }} vlan {{ instance.vlans }}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+{% endif %}
+{% if xstp_vars.intf is defined and xstp_vars.intf %}
+  {% for intr in xstp_vars.intf.keys() %}
+    {% set intf_vars = xstp_vars.intf[intr] %}
+interface {{ intr }}
+      {% if intf_vars.edge_port is defined %}
+        {% if not intf_vars.edge_port %}
+ no spanning-tree port type edge
+        {% else %}
+ spanning-tree port type edge
+        {% endif %}
+      {% endif %}
+      {% if intf_vars.bpdu_filter is defined %}
+        {% if intf_vars.bpdu_filter %}
+ spanning-tree bpdufilter enable
+        {% else %}
+ spanning-tree bpdufilter disable
+        {% endif %}
+      {% endif %}
+      {% if intf_vars.bpdu_guard is defined %}
+        {% if intf_vars.bpdu_guard %}
+ spanning-tree bpduguard enable
+        {% else %}
+ spanning-tree bpduguard disable
+        {% endif %}
+      {% endif %}
+      {% if intf_vars.guard is defined %}
+        {% if intf_vars.guard %}
+ spanning-tree guard {{ intf_vars.guard }}
+        {% else %}
+ spanning-tree guard none
+        {% endif %}
+      {% endif %}
+      {% if intf_vars.enable is defined %}
+        {% if intf_vars.enable %}
+ no spanning-tree disable
+        {% else %}
+ spanning-tree disable
+        {% endif %}
+      {% endif %}
+      {% if intf_vars.link_type is defined %}
+        {% if intf_vars.link_type %}
+ spanning-tree link-type {{ intf_vars.link_type }}
+        {% else %}
+ no spanning-tree link-type 
+        {% endif %}
+      {% endif %}
+      {% if intf_vars.rstp is defined and intf_vars.rstp %}
+        {% if intf_vars.rstp.priority is defined %}
+          {% if intf_vars.rstp.priority %}
+ spanning-tree rstp priority {{ intf_vars.rstp.priority }}
+          {% else %}
+ no spanning-tree rstp priority 
+          {% endif %}
+        {% endif %}
+        {% if intf_vars.rstp.cost is defined %}
+          {% if intf_vars.rstp.cost %}
+ spanning-tree rstp cost {{ intf_vars.rstp.cost }}
+          {% else %}
+ no spanning-tree rstp cost
+          {% endif %}
+        {% endif %}
+      {% endif %}
+      {% if intf_vars.msti is defined and intf_vars.msti %}
+        {% for inst in intf_vars.msti %}
+          {% if inst.instance_number is defined and inst.instance_number==0 or inst.instance_number %}
+            {% if inst.priority is defined %}
+              {% if inst.priority %}
+ spanning-tree msti {{ inst.instance_number }} priority {{ inst.priority }}
+              {% else %}
+ no spanning-tree msti {{ inst.instance_number }} priority 1
+              {% endif %}
+            {% endif %}
+            {% if inst.cost is defined %}
+              {% if inst.cost %}
+ spanning-tree msti {{ inst.instance_number }} cost {{ inst.cost }}
+              {% else %}
+ no spanning-tree msti {{ inst.instance_number }} cost 1
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+      {% if intf_vars.vlan is defined and intf_vars.vlan %}
+        {% for inst in intf_vars.vlan %}
+          {% if inst.range_or_id is defined and inst.range_or_id %}
+            {% if inst.priority is defined %}
+              {% if inst.priority %}
+ spanning-tree vlan {{ inst.range_or_id }} priority {{ inst.priority }}
+              {% else %}
+ no spanning-tree vlan {{ inst.range_or_id }} priority 1
+              {% endif %}
+            {% endif %}
+            {% if inst.cost is defined %}
+              {% if inst.cost %}
+ spanning-tree vlan {{ inst.range_or_id }} cost {{ inst.cost }}
+              {% else %}
+ no spanning-tree vlan {{ inst.range_or_id }} cost 1
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+  {% endfor %}
+{% endif %}
+
+{% endif %}

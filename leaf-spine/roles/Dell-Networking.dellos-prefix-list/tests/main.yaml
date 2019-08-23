@@ -1,0 +1,52 @@
+---
+# vars file for Dell-Networking.dellos-prefix-list, below gives a sample configuration
+
+# Sample variables for dellos9 device
+dellos_prefixlist:
+  - type: ipv4
+    name: spine-leaf
+    description: Redistribute loopback and leaf networks 
+    entries:
+      - number: 5
+        permit: true
+        net_num: 10.0.0.0
+        mask: 23
+        condition_list:
+          - condition: ge
+            prelen: 32
+      - number: 10
+        permit: true
+        net_num: 10.0.0.0
+        mask: 8
+        condition_list:
+          - condition: ge
+            prelen: 26
+      - number: 19
+        permit: true
+        net_num: 20.0.0.0
+        mask: 16
+        condition_list:
+          - condition: ge
+            prelen: 17
+          - condition: le
+            prelen: 18
+        state: present
+
+# Sample variables for dellos10 device
+dellos_prefixlist:
+   - name: testpl
+     type: ipv4
+     description: pl
+     entries:
+       - number: 19
+         permit: true
+         net_num: 20.0.0.0
+         mask: 16
+         condition_list:
+           - condition: ge
+             prelen: 17
+           - condition: le
+             prelen: 18
+         state: present
+     state: present
+

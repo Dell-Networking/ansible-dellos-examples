@@ -1,0 +1,157 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+{##########################################
+Purpose:
+Configure VRRP commands for dellos10 Devices
+dellos_vrrp:
+    vrrp:
+      delay_reload: 2
+      version: 3
+    ethernet1/1/1:
+      vrrp_group:
+        - group_id: 2
+          type: ipv6
+          priority: 120
+          preempt: false
+          track_interface:
+            - resource_id: 3
+              priority_cost: 25
+              state: present
+          virtual_address:
+            - ip: 2001:4828:5808:ffa3::9
+              state: present
+            - ip: 3001:4828:5808:ffa3::9
+              state: present
+            - ip: 4001:4828:5808:ffa3::9
+              state: absent
+          adv_interval_centisecs: 200
+          state: present
+        - group_id: 4
+          virtual_address:
+            - ip: 4.1.1.1
+              state: present
+            - ip: 4.1.1.2
+              state: present
+            - ip: 4.1.1.3
+              state: absent
+          priority: 120
+          preempt: false
+          track_interface:
+            - resource_id: 3
+              priority_cost: 25
+              state: present
+          adv_interval_centisecs: 200
+          state: present
+    vlan100:
+      vrrp_active_active_mode: True
+#########################################}
+{% if dellos_vrrp is defined and dellos_vrrp %}
+{% for key,value in dellos_vrrp.iteritems() %}
+{% if key == "vrrp" %}
+    {% if value.delay_reload is defined %}
+      {% if value.delay_reload >=0 %}
+vrrp delay reload {{ value.delay_reload }}
+      {% else %}
+vrrp delay reload {{ value.delay_reload }}
+      {% endif %}
+    {% endif %}
+    {% if value.version is defined %}
+       {% if value.version %}
+vrrp version {{ value.version }}
+       {% else %}
+no vrrp version
+       {% endif %}
+    {% endif %}
+{% else %}
+interface {{ key }}
+  {% if value %}
+  {% if key.startswith("vlan") %}
+  {% if value.vrrp_active_active_mode is defined %}
+    {% if value.vrrp_active_active_mode %}
+ vrrp mode active-active
+    {% else %}
+ no vrrp mode active-active
+    {% endif %}
+  {% endif %}
+  {% endif %}
+  {% if value.vrrp_group is defined and value.vrrp_group  %}
+  {% for group in value.vrrp_group %}
+    {% if group.group_id is defined and group.group_id %}
+      {% if group.state is defined and group.state == "absent" %}
+        {% if group.type is defined and group.type == "ipv6" %}
+ no vrrp-ipv6-group {{ group.group_id }}
+        {% else %}
+ no vrrp-group {{ group.group_id }}
+        {% endif %}
+      {% else %}
+        {% if group.type is defined and group.type == "ipv6" %}
+ vrrp-ipv6-group {{ group.group_id }}
+        {% else %}
+ vrrp-group {{ group.group_id }}
+        {% endif %}
+        {% if group.adv_interval_centisecs is defined %}
+          {% if group.adv_interval_centisecs %}
+  advertise-interval centisecs {{ group.adv_interval_centisecs }}
+          {% else %}
+  no advertise-interval centisecs
+          {% endif %}
+        {% endif %}
+        {% if group.adv_interval_secs is defined %}
+          {% if group.adv_interval_secs %}
+  advertise-interval secs {{ group.adv_interval_secs }}
+          {% else %}
+  no advertise-interval secs
+          {% endif %}
+        {% endif %}
+          {% if group.track_interface is defined and group.track_interface %}
+            {% for track_item in group.track_interface %}
+              {% if track_item.state is defined and track_item.state == "absent" %}
+                {% if track_item.resource_id is defined and track_item.resource_id %}
+  no track {{ track_item.resource_id }} 
+                {% endif %}
+              {% else %}
+                {% if track_item.resource_id is defined and track_item.resource_id %}
+                  {% if track_item.priority_cost is defined and track_item.priority_cost %}
+  track {{ track_item.resource_id }} priority-cost {{ track_item.priority_cost }}
+                  {% else %}
+  track {{ track_item.resource_id }}
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          {% if group.virtual_address is defined and group.virtual_address %}
+            {% for virtual_interface in group.virtual_address %}
+              {% if virtual_interface.state is defined and virtual_interface.state == "absent" %}
+                {% if virtual_interface.ip is defined and virtual_interface.ip %}
+  no virtual-address {{ virtual_interface.ip }} 
+                {% endif %}
+              {% else %}
+                {% if virtual_interface.ip is defined and virtual_interface.ip %}
+  virtual-address {{ virtual_interface.ip }}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        {% if group.preempt is defined %}
+          {% if group.preempt %}
+  preempt
+          {% else %}
+  no preempt
+          {% endif %}
+        {% endif %}
+        {% if group.priority is defined %}
+          {% if group.priority %}
+  priority {{ group.priority }}
+          {% else %}
+  no priority 
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+  {% endif %}
+  {% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+

@@ -1,0 +1,534 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+{###########################################
+
+Purpose:
+Configure BGP commands for dellos10 Devices
+
+dellos_bgp:
+    asn: 12
+    router_id: 90.1.1.4
+    maxpath_ibgp: 2
+    maxpath_ebgp: 2
+    graceful_restart: true
+    log_neighbor_changes: true
+    fast_ext_fallover: false
+    always_compare_med: true
+    default_loc_pref: 1000
+    confederation:
+      identifier: 25
+      peers: 23 24
+      peers_state: present
+    route_reflector:
+      client_to_client: false
+      cluster_id: 4294967295
+    address_family_ipv4:
+      aggregate_address:
+         - ip_and_mask: 1.1.1.1/16
+           state: present
+      dampening: 
+        value: 15 750 2000 60
+        route_map: qq
+        state: present
+    best_path:
+       as_path: ignore
+       as_path_state: present
+       ignore_router_id: true
+       med:
+        - attribute: confed
+          state: present
+    ipv4_network:
+       - address: 101.1.1.0/30
+         state: present
+    ipv6_network:
+      - address: "2001:4898:5808:ffa0::/126"
+        state: present
+    neighbor:
+      - type: ipv4
+        remote_asn: 11
+        ip: 192.168.10.1
+        peergroup: peer1
+        peergroup_state: present
+        adv_interval: 40
+        fall_over: present
+        password: bgppassword
+        route_reflector_client: true
+        address_family: 
+          - type: ipv4
+            activate: true
+            state: present
+        send_community:
+          - type: standard
+            state: present
+        state: present
+      - type: ipv4
+        remote_asn: 13
+        local_as: 10
+        weight: 10
+        ip: 192.168.12.3
+        address_family:
+          - type: ipv4
+            activate: true
+            allow_as_in: 5
+            next_hop_self: true
+            soft_reconf: true
+            add_path: both 3
+            route_map:
+              - name: qq
+                filter: in
+                state: present
+            state: present
+        state: present
+      - name: peer1
+        type: peergroup
+        remote_asn: 12
+        subnet: 10.128.4.192/27
+        limit: 4
+        state: present
+      - type: ipv6
+        remote_asn: 14
+        ip: 2001:4898:5808:ffa2::1
+        state: present
+    redistribute:
+      - route_type: static
+        route_map_name: aa
+        address_type: ipv4
+        state: present
+    state: present
+
+################################}
+{% if dellos_bgp is defined and dellos_bgp %}
+{% set bgp_vars = dellos_bgp %}
+{% if bgp_vars.state is defined and bgp_vars.state == "absent" %}
+no router bgp
+{% else %}
+  {# Add Feature to the switch #}
+  {% if bgp_vars.asn is defined and bgp_vars.asn %}
+router bgp {{ bgp_vars.asn }}
+    {% if bgp_vars.router_id is defined %}
+      {% if bgp_vars.router_id %}
+ router-id {{ bgp_vars.router_id }}
+      {% else %}
+ no router-id
+      {% endif %}
+    {% endif %}
+
+    {% if bgp_vars.log_neighbor_changes is defined %}
+      {% if bgp_vars.log_neighbor_changes %}
+ log-neighbor-changes
+      {% else %}
+ no log-neighbor-changes
+      {% endif %}
+    {% endif %}
+
+    {% if bgp_vars.maxpath_ebgp is defined %}
+      {% if bgp_vars.maxpath_ebgp %}
+ maximum-paths ebgp {{ bgp_vars.maxpath_ebgp }}
+      {% else %}
+ no maximum-paths ebgp
+      {% endif %}
+    {% endif %}
+
+    {% if bgp_vars.maxpath_ibgp is defined %}
+      {% if bgp_vars.maxpath_ibgp %}
+ maximum-paths ibgp {{ bgp_vars.maxpath_ibgp }}
+      {% else %}
+ no maximum-paths ibgp
+      {% endif %}
+    {% endif %}
+
+    {% if bgp_vars.graceful_restart is defined %}
+      {% if bgp_vars.graceful_restart %}
+ graceful-restart role receiver-only
+      {% else %}
+ no graceful-restart role receiver-only
+      {% endif %}
+    {% endif %}
+
+    {% if bgp_vars.always_compare_med is defined %}
+      {% if bgp_vars.always_compare_med %}
+ always-compare-med
+      {% else %}
+ no always-compare-med
+      {% endif %}
+    {% endif %}
+
+    {% if bgp_vars.default_loc_pref is defined %}
+      {% if bgp_vars.default_loc_pref %}
+ default local-preference {{ bgp_vars.default_loc_pref }}
+      {% else %}
+ no default local-preference
+      {% endif %}
+    {% endif %}
+
+    {% if bgp_vars.fast_ext_fallover is defined %}
+      {% if bgp_vars.fast_ext_fallover %}
+ fast-external-fallover
+      {% else %}
+ no fast-external-fallover 
+      {% endif %}
+    {% endif %}
+
+    {% if bgp_vars.confederation is defined and bgp_vars.confederation %}
+      {% if bgp_vars.confederation.identifier is defined %}
+        {% if bgp_vars.confederation.identifier %}
+ confederation identifier {{ bgp_vars.confederation.identifier }}
+        {% else %}
+ no confederation identifier 1
+        {% endif %}
+      {% endif %}
+      {% if bgp_vars.confederation.peers is defined  and bgp_vars.confederation.peers %}
+        {% if bgp_vars.confederation.peers_state is defined and bgp_vars.confederation.peers_state == "absent" %}
+ no confederation peers {{ bgp_vars.confederation.peers }}
+        {% else %}
+ confederation peers {{ bgp_vars.confederation.peers }}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+
+    {% if bgp_vars.route_reflector is defined and bgp_vars.route_reflector %}
+      {% if bgp_vars.route_reflector.client_to_client is defined %}
+        {% if bgp_vars.route_reflector.client_to_client %}
+ client-to-client reflection
+        {% else %}
+ no client-to-client reflection
+        {% endif %}
+      {% endif %}
+      {% if bgp_vars.route_reflector.cluster_id is defined %}
+        {% if bgp_vars.route_reflector.cluster_id %}
+ cluster-id {{ bgp_vars.route_reflector.cluster_id }}
+        {% else %}
+ no cluster-id 1
+        {% endif %}
+      {% endif %}
+    {% endif %}
+
+    {% if bgp_vars.best_path is defined and bgp_vars.best_path %}
+      {% if bgp_vars.best_path.as_path is defined and bgp_vars.best_path.as_path %}
+        {% if bgp_vars.best_path.as_path_state is defined and bgp_vars.best_path.as_path_state == "absent" %}
+ no bestpath as-path {{ bgp_vars.best_path.as_path }}
+        {% else %}
+ bestpath as-path {{ bgp_vars.best_path.as_path }}
+        {% endif %}
+      {% endif %}
+      {% if bgp_vars.best_path.ignore_router_id is defined %}
+        {% if bgp_vars.best_path.ignore_router_id %}
+ bestpath router-id ignore
+        {% else %}
+ no bestpath router-id ignore
+        {% endif %}
+      {% endif %}
+      {% if bgp_vars.best_path.med is defined and bgp_vars.best_path.med %}
+        {% for med in bgp_vars.best_path.med %}
+          {% if med.attribute is defined and med.attribute %}
+            {% if med.state is defined and med.state == "absent" %}
+ no bestpath med {{ med.attribute }}
+            {% else %}
+ bestpath med {{ med.attribute }}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+
+    {% if bgp_vars.address_family_ipv4 is defined and bgp_vars.address_family_ipv4 %}
+      {% set af_vars = bgp_vars.address_family_ipv4 %}
+ address-family ipv4 unicast
+    {% elif bgp_vars.address_family_ipv6 is defined and bgp_vars.address_family_ipv6 %}
+      {% set af_vars = bgp_vars.address_family_ipv6 %}
+ address-family ipv6 unicast
+    {% endif %}
+    {% if af_vars is defined and af_vars %}
+      {% if af_vars.aggregate_address is defined and af_vars.aggregate_address %}
+        {% for addr in af_vars.aggregate_address %}
+          {% if addr.ip_and_mask is defined and addr.ip_and_mask %}
+            {% if addr.state is defined and addr.state == "absent" %}
+  no aggregate-address {{ addr.ip_and_mask }}
+            {% else %}
+  aggregate-address {{ addr.ip_and_mask }}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+      {% if af_vars.dampening is defined and af_vars.dampening %}
+        {% if af_vars.dampening.state is defined and af_vars.dampening.state == "absent" %}
+  no dampening
+        {% else %}
+          {% if af_vars.dampening.value is defined and af_vars.dampening.value %}
+            {% if af_vars.dampening.route_map is defined and af_vars.dampening.route_map %}
+  dampening {{ af_vars.dampening.value }} route-map {{ af_vars.dampening.route_map }}
+            {% else %}
+  dampening {{ af_vars.dampening.value }}
+            {% endif %}
+          {% else %}
+            {% if af_vars.dampening.route_map is defined and af_vars.dampening.route_map %}
+  dampening 15 750 2000 60 route-map {{ af_vars.dampening.route_map }}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+
+    {% if bgp_vars.ipv4_network is defined and bgp_vars.ipv4_network %}
+ address-family ipv4 unicast
+      {% for net in bgp_vars.ipv4_network %}
+        {% if net.address is defined and net.address %}
+          {% if net.state is defined and net.state == "absent"%}
+  no network {{ net.address }}
+          {% else %}
+  network {{ net.address }}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {% if bgp_vars.ipv6_network is defined and bgp_vars.ipv6_network %}
+ address-family ipv6 unicast
+      {% for net in bgp_vars.ipv6_network %}
+        {% if net.address is defined and net.address %}
+          {% if net.state is defined and net.state == "absent"%}
+  no network {{ net.address }}
+          {% else %}
+  network {{ net.address }}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {% if bgp_vars.redistribute is defined and bgp_vars.redistribute %}
+      {% for route in bgp_vars.redistribute %}
+        {% if route.route_type is defined  and route.route_type %}
+          {% if route.address_type is defined and route.address_type %}
+ address-family {{ route.address_type }} unicast
+            {% if route.state is defined and route.state == "absent" %}
+  no redistribute {{ route.route_type }}
+            {% else %}
+              {% if route.route_map_name is defined and route.route_map_name %}
+  redistribute {{ route.route_type }} route-map {{ route.route_map_name }}
+              {% else %}
+  redistribute {{ route.route_type }}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+  {% if bgp_vars.neighbor is defined and bgp_vars.neighbor %}
+    {% for neighbor in bgp_vars.neighbor %}
+      {% if neighbor.type is defined  %}
+        {% if neighbor.type == "ipv4" or neighbor.type =="ipv6" %}
+          {% if neighbor.ip is defined and neighbor.ip %}
+            {% set tag_or_ip = neighbor.ip %}
+              {% if neighbor.state is defined and neighbor.state == "absent" %}
+ no neighbor {{ tag_or_ip }}
+              {% else %}
+ neighbor {{ tag_or_ip }}
+                {% if neighbor.peergroup is defined and neighbor.peergroup %}
+                  {% if neighbor.peergroup_state is defined and neighbor.peergroup_state == "absent" %}
+  no inherit template {{ neighbor.peergroup }}
+                  {% else %}
+  inherit template {{ neighbor.peergroup }}
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+          {% endif %}
+        {% elif neighbor.type == "peergroup" %}
+          {% if neighbor.name is defined and neighbor.name %}
+            {% set tag_or_ip = neighbor.name %}
+            {% if neighbor.state is defined and neighbor.state == "absent" %}
+ no template {{ tag_or_ip }}
+            {% else %}
+ template {{ tag_or_ip }}
+              {% if neighbor.subnet is defined and neighbor.subnet %}
+                {% if neighbor.subnet_state is defined and neighbor.subnet_state =="absent" %}
+  no listen {{ neighbor.subnet }}
+                {% else %}
+                  {% if neighbor.limit is defined and neighbor.limit %}
+  listen {{ neighbor.subnet }} limit {{ neighbor.limit }}
+                  {% else %}
+  listen {{ neighbor.subnet }}
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+        {% if tag_or_ip is defined and tag_or_ip %}
+          {% if (neighbor.state is defined and not neighbor.state == "absent" ) or neighbor.state is not defined %}
+            {% if neighbor.remote_asn is defined and neighbor.remote_asn %}
+              {% if neighbor.remote_asn_state is defined and neighbor.remote_asn_state == "absent" %}
+  no remote-as {{ neighbor.remote_asn }}
+              {% else %}
+  remote-as {{ neighbor.remote_asn }}
+              {% endif %}
+            {% endif %}
+            {% if neighbor.local_as is defined %}
+              {% if neighbor.local_as %}
+  local-as {{ neighbor.local_as }}
+              {% else %}
+  no local-as
+              {% endif %}
+            {% endif %}
+            {% if neighbor.weight is defined %}
+              {% if neighbor.weight %}
+  weight {{ neighbor.weight }}
+              {% else %}
+  no weight
+              {% endif %}
+            {% endif %}
+            {% if neighbor.ebgp_multihop is defined %}
+              {% if neighbor.ebgp_multihop %}
+  ebgp-multihop {{ neighbor.ebgp_multihop }}
+              {% else %}
+  no ebgp-multihop
+              {% endif %}
+            {% endif %}
+            {% if neighbor.route_reflector_client is defined %}
+              {% if neighbor.route_reflector_client %}
+  route-reflector-client
+              {% else %}
+  no route-reflector-client
+              {% endif %}
+            {% endif %}
+            {% if neighbor.password is defined %}
+              {% if neighbor.password %}
+  password {{ neighbor.password }}
+              {% else %}
+  no password a
+              {% endif %}
+            {% endif %}
+            {% if neighbor.send_community is defined and neighbor.send_community %}
+              {% for comm in neighbor.send_community %}
+                {% if comm.type is defined and comm.type %}
+                  {% if comm.state is defined and comm.state == "absent" %}            
+  no send-community {{ comm.type }}
+                  {% else %}
+  send-community {{ comm.type }}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+            {% if neighbor.address_family is defined and neighbor.address_family %}
+              {% for af in neighbor.address_family %}
+                {% if af.type is defined and af.type %}
+                  {% if af.state is defined and af.state == "absent" %}
+  no address-family {{ af.type }} unicast
+                  {% else %}
+  address-family {{ af.type }} unicast
+                    {% if af.activate is defined %}
+                      {% if af.activate %}
+   activate
+                      {% else %}
+   no activate
+                      {% endif %}
+                    {% endif %}
+                    {% if af.allow_as_in is defined %}
+                      {% if af.allow_as_in %}
+   allowas-in {{ af.allow_as_in }}
+                      {% else %}
+   no allowas-in
+                      {% endif %}
+                    {% endif %}
+                    {% if af.route_map is defined and af.route_map %}
+                      {% for item in af.route_map %}
+                        {% if item.name is defined and item.name %}
+                           {% if item.filter is defined and item.filter %}
+                             {%  if item.state is defined and item.state == "absent" %}
+   no route-map {{ item.name }} {{ item.filter }}
+                             {% else %}
+   route-map {{ item.name }} {{ item.filter }}
+                             {% endif%}
+                           {% endif %}
+                        {% endif %}
+                      {% endfor %}
+                     {% endif %}
+                    {% if af.next_hop_self is defined %}
+                      {% if af.next_hop_self %}
+   next-hop-self
+                      {% else %}
+   no next-hop-self
+                      {% endif %}
+                    {% endif %}
+                    {% if af.soft_reconf is defined %}
+                      {% if af.soft_reconf %}
+   soft-reconfiguration inbound
+                      {% else %}
+   no soft-reconfiguration inbound
+                      {% endif %}
+                    {% endif %}
+                    {% if af.add_path is defined %}
+                      {% if af.add_path %}
+   add-path {{ af.add_path }}
+                      {% else %}
+   no add-path
+                      {% endif %}
+                    {% endif %}
+
+
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+            {% if neighbor.adv_interval is defined %}
+              {% if neighbor.adv_interval %}
+  advertisement-interval {{ neighbor.adv_interval }}
+              {% else %}
+  no advertisement-interval
+              {% endif %}
+            {% endif %}
+            {% if neighbor.fall_over is defined and neighbor.fall_over == "present" %}
+  fall-over
+            {% elif neighbor.fall_over is defined and neighbor.fall_over == "absent" %}
+  no fall-over
+            {% endif %}
+
+            {% if neighbor.timer is defined %}
+              {% if neighbor.timer %}
+  timers {{ neighbor.timer }}
+              {% else %}
+  no timers
+              {% endif %}
+            {% endif %}
+            {% if neighbor.admin is defined %}
+              {% if neighbor.admin == "up" %}
+  no shutdown
+              {% else %}
+  shutdown
+              {% endif %}
+            {% endif %}
+            {% if neighbor.distribute_list is defined and neighbor.distribute_list %}
+  address-family ipv4 unicast
+              {% if neighbor.distribute_list.in is defined and neighbor.distribute_list.in %}
+                 {% if neighbor.distribute_list.in_state is defined and neighbor.distribute_list.in_state == "absent" %}
+   no distribute-list {{ neighbor.distribute_list.in }} in
+                {% else %} 
+   distribute-list {{ neighbor.distribute_list.in }} in
+                {% endif %}
+              {% endif %}
+              {% if neighbor.distribute_list.out is defined and neighbor.distribute_list.out %}
+               {% if neighbor.distribute_list.out_state is defined and neighbor.distribute_list.out_state == "absent" %}
+   no distribute-list {{ neighbor.distribute_list.out }} out
+                {% else %}
+   distribute-list {{ neighbor.distribute_list.out }} out
+                {% endif %}
+              {% endif %}
+            {% endif %}
+            {% if neighbor.sender_loop_detect is defined %}
+  address-family ipv4 unicast
+              {% if neighbor.sender_loop_detect %}
+   sender-side-loop-detection
+              {% else %}
+   no sender-side-loop-detection
+              {% endif %}
+            {% endif %}
+
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+
+  {% endif %}
+{% endif %}
+{% endif %}

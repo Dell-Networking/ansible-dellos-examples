@@ -1,0 +1,94 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{################################
+
+Purpose:
+Configure interface commands for dellos6 Devices.
+
+dellos_interface:
+    Te1/0/1:
+            desc: "connected to spine1"
+            portmode: trunk
+            admin: up
+    vlan 100:
+            ip_type_dynamic: False
+            ip_and_mask: 3.3.3.3 255.255.255.0
+            suppress_ra: present
+    vlan 101:
+            ipv6_and_mask: 2001:db8:3c4d:15::/64
+            ipv6_reachabletime: 6000
+            ip_helper:
+               - ip: 10.0.0.33
+                 state: present
+    vlan 102:
+            ip_type_dynamic: True
+
+################################}
+{% if dellos_interface is defined and dellos_interface %}
+{% for key in dellos_interface.keys() %}
+interface {{ key }}
+{% set intf_vars  = dellos_interface[key] %}
+{% if intf_vars.desc is defined %}
+ {% if intf_vars.desc %}
+description "{{ intf_vars.desc }}"
+ {% else %}
+no description
+ {% endif %}
+{% endif %}
+{% if intf_vars.portmode is defined %}
+ {% if intf_vars.portmode %}
+switchport mode {{ intf_vars.portmode }}
+ {% else %}
+no switchport mode
+ {% endif %}
+{% endif %}
+{% if intf_vars.admin is defined %}
+ {% if intf_vars.admin == "up"%}
+no shutdown
+ {% elif intf_vars.admin == "down" %}
+shutdown
+ {% endif %}
+{% endif %}
+{% if intf_vars.ip_type_dynamic is defined and intf_vars.ip_type_dynamic %}
+ip address dhcp
+{% elif intf_vars.ip_and_mask is defined  %}
+  {% if intf_vars.ip_and_mask %}
+ip address {{ intf_vars.ip_and_mask }}
+  {% else %}
+no ip address
+  {% endif %}
+{% endif %}
+{% if intf_vars.suppress_ra is defined %}
+   {% if intf_vars.suppress_ra == "present" %}
+ipv6 nd suppress-ra
+   {% else %}
+no ipv6 nd suppress-ra
+   {% endif %}
+{% endif %}
+{% if intf_vars.ipv6_and_mask is defined %}
+ {% if intf_vars.ipv6_and_mask %}
+ipv6 address {{ intf_vars.ipv6_and_mask }}
+ {% else %}
+no ipv6 address
+ {% endif %}
+{% endif %}
+{% if intf_vars.ipv6_reachabletime is defined %}
+  {% if intf_vars.ipv6_reachabletime %}
+ipv6 nd reachable-time {{ intf_vars.ipv6_reachabletime }}
+  {% else %}
+no ipv6 nd reachable-time
+  {% endif %}
+{% endif %}
+{% if intf_vars.ip_helper is defined and intf_vars.ip_helper %}
+  {% for helper in intf_vars.ip_helper %}
+    {% if helper.ip is defined and helper.ip %}
+      {% if helper.state is defined and helper.state=="absent" %}
+no ip helper-address {{ helper.ip }}
+      {% else %}
+ip helper-address {{ helper.ip }}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+exit
+{% endfor %}
+{% endif %}

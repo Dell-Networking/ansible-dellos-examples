@@ -1,0 +1,50 @@
+---
+
+plr4z9264exchngpnt1  ansible_host=172.21.62.169
+plr4z9264exchngpnt2  ansible_host=172.21.62.170
+plr4z9100spine1  ansible_host=172.21.62.177
+plr4z9100spine2  ansible_host=172.21.62.178
+plr1z9100leaf1  ansible_host=172.21.62.171
+plr1z9100leaf2  ansible_host=172.21.62.172
+plr2z9100leaf1  ansible_host=172.21.62.173
+plr2z9100leaf2  ansible_host=172.21.62.174
+plr3z9100leaf1  ansible_host=172.21.62.175
+plr3z9100leaf2  ansible_host=172.21.62.176
+
+[spine]
+plr4z9100spine1
+plr4z9100spine2
+
+[leaf]
+plr1z9100leaf1
+plr1z9100leaf2
+plr2z9100leaf1
+plr2z9100leaf2
+plr3z9100leaf1
+plr3z9100leaf2
+
+[exchange]
+plr4z9264exchngpnt1
+plr4z9264exchngpnt2
+
+[management]
+
+[pod1]
+plr4z9100spine1
+plr4z9100spine2
+plr1z9100leaf1
+plr1z9100leaf2
+plr2z9100leaf1
+plr2z9100leaf2
+plr3z9100leaf1
+plr3z9100leaf2
+
+[pod2]
+
+[pods:children]
+pod1
+pod2
+
+[datacenter:children]
+exchange
+pods

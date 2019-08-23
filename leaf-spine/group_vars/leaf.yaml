@@ -1,0 +1,334 @@
+---
+
+dellos_system: "{{ all_system }}"
+
+interfaces_breakout:
+    ethernet 1/1/1:
+            fanout: 25g-4x
+    ethernet 1/1/2:
+            fanout: 25g-4x
+
+leaf_vlt_peers: 
+   port-channel 1:
+        peer_lag: 1
+   port-channel 2:
+        peer_lag: 2
+   port-channel 3:
+        peer_lag: 3
+   port-channel 4:
+        peer_lag: 4
+   port-channel 5:
+        peer_lag: 5
+   port-channel 6:
+        peer_lag: 6
+   port-channel 7:
+        peer_lag: 7
+   port-channel 8:
+        peer_lag: 8
+
+vlt_peers: "{{ (leaf_vlt_peers|default({})) | combine(addtl_vlt_peers|default({})) }}" 
+
+leaf_vlt:
+  vlt_peer_routing: false
+  vlt_peers: "{{ vlt_peers|default({}) }}"
+
+dellos_vlt: "{{ (all_vlt|default({})) | combine(leaf_vlt|default({})) }}"
+
+link_bundle_monitor: 
+   - port-channel 1
+   - port-channel 2
+   - port-channel 3
+   - port-channel 4
+   - port-channel 5
+   - port-channel 6
+   - port-channel 7
+   - port-channel 8
+   - port-channel "{{ port_channel_id_1 }}"
+
+leaf_xstp:
+    type: rstp
+    intf:
+      port-channel 1:
+         edge_port: true
+      port-channel 2:
+         edge_port: true
+      port-channel 3:
+         edge_port: true
+      port-channel 4:
+         edge_port: true
+      port-channel 5:
+         edge_port: true
+      port-channel 6:
+         edge_port: true
+
+dellos_xstp: "{{ leaf_xstp | combine (addtl_xstp|default({})) }}"
+
+leaf_interfaces:
+    vlan 1:
+            admin: up
+    vlan 100:
+            desc: "data-network-vlan"
+            admin: up
+            mtu: "{{ mtu }}"
+            ip_and_mask: "{{ vlan100_ip }}"
+    vlan 200:
+            desc: "data-network-vlan2"
+            admin: up
+            mtu: "{{ mtu }}"
+            ip_and_mask: "{{ vlan200_ip }}"
+    port-channel 1:
+            desc: "To-Server-1"
+            admin: up
+            mtu: "{{ mtu }}"
+    port-channel 2:
+            desc: "To-Server-2"
+            admin: up
+            mtu: "{{ mtu }}"
+    port-channel 3:
+            desc: "To-Server-3"
+            admin: up
+            mtu: "{{ mtu }}"
+    port-channel 4:
+            desc: "To-Server-4"
+            admin: up
+            mtu: "{{ mtu }}"
+    port-channel 5:
+            desc: "To-Server-5"
+            admin: up
+            mtu: "{{ mtu }}"
+    port-channel 6:
+            desc: "To-Server-6"
+            admin: up
+            mtu: "{{ mtu }}"
+    port-channel 7:
+            desc: "To-Server-7"
+            admin: up
+            mtu: "{{ mtu }}"
+    port-channel 8:
+            desc: "To-Server-8"
+            admin: up
+            mtu: "{{ mtu }}"
+    ethernet 1/1/1:1:
+            desc: "To-Server-1"
+            admin: up
+            mtu: "{{ mtu }}"
+            switchport: False
+    ethernet 1/1/1:2:
+            desc: "To-Server-2"
+            admin: up
+            mtu: "{{ mtu }}"
+            switchport: False
+    ethernet 1/1/1:3:
+            desc: "To-Server-3"
+            admin: up
+            mtu: "{{ mtu }}"
+            switchport: False
+    ethernet 1/1/1:4:
+            desc: "To-Server-4"
+            admin: up
+            mtu: "{{ mtu }}"
+            switchport: False
+    ethernet 1/1/2:1:
+            desc: "To-Server-5"
+            admin: up
+            mtu: "{{ mtu }}"
+            switchport: False
+    ethernet 1/1/2:2:
+            desc: "To-Server-6"
+            admin: up
+            mtu: "{{ mtu }}"
+            switchport: False
+    ethernet 1/1/2:3:
+            desc: "To-Server-7"
+            admin: up
+            mtu: "{{ mtu }}"
+            switchport: False
+    ethernet 1/1/2:4:
+            desc: "To-Server-8"
+            admin: up
+            mtu: "{{ mtu }}"
+            switchport: False
+    ethernet 1/1/3:
+            admin: down
+            switchport: False
+    ethernet 1/1/4:
+            admin: down
+            switchport: False
+    ethernet 1/1/5:
+            admin: down
+            switchport: False
+    ethernet 1/1/6:
+            admin: down
+            switchport: False
+    ethernet 1/1/7:
+            admin: down
+            switchport: False
+    ethernet 1/1/8:
+            admin: down
+            switchport: False
+    ethernet 1/1/9:
+            desc: "To-Spine-1"
+            admin: up
+            mtu: "{{ mtu }}"
+            switchport: False
+    ethernet 1/1/10:
+            admin: down
+            switchport: False
+    ethernet 1/1/11:
+            admin: down
+            switchport: False
+    ethernet 1/1/12:
+            desc: "To-Spine-2"
+            admin: up
+            mtu: "{{ mtu }}"
+            switchport: False
+    ethernet 1/1/13:
+            admin: down
+            switchport: False
+    ethernet 1/1/14:
+            admin: down
+            switchport: False
+    ethernet 1/1/15:
+            admin: down
+            switchport: False
+    ethernet 1/1/16:
+            admin: down
+            switchport: False
+    ethernet 1/1/17:
+            admin: down
+            switchport: False
+    ethernet 1/1/18:
+            admin: down
+            switchport: False
+    ethernet 1/1/19:
+            admin: down
+            switchport: False
+    ethernet 1/1/20:
+            admin: down
+            switchport: False
+    ethernet 1/1/21:
+            admin: down
+            switchport: False
+    ethernet 1/1/22:
+            admin: down
+            switchport: False
+    ethernet 1/1/23:
+            admin: down
+            switchport: False
+    ethernet 1/1/24:
+            admin: down
+            switchport: False
+    ethernet 1/1/25:
+            admin: down
+            switchport: False
+    ethernet 1/1/26:
+            admin: down
+            switchport: False
+    ethernet 1/1/27:
+            admin: down
+            switchport: False
+    ethernet 1/1/28:
+            admin: down
+            switchport: False
+    ethernet 1/1/29:
+            desc: "VLTi-link"
+            admin: up
+            mtu: "{{ mtu }}"
+            switchport: False
+    ethernet 1/1/30:
+            desc: "VLTi-link"
+            admin: up
+            mtu: "{{ mtu }}"
+            switchport: False
+    ethernet 1/1/31:
+            admin: down
+            switchport: False
+    ethernet 1/1/32:
+            admin: down
+            switchport: False
+    ethernet 1/1/33:
+            admin: down
+            mtu: "{{ mtu }}"
+            switchport: False
+    ethernet 1/1/34:
+            admin: down
+            switchport: False
+
+interfaces: "{{ leaf_interfaces | combine (addtl_interfaces|default({})) }}"
+
+
+dellos_vlan:
+  vlan 100:
+      tagged_members:
+        - port: port-channel 1
+        - port: port-channel 2
+        - port: port-channel 3
+        - port: port-channel 4
+        - port: port-channel 5
+        - port: port-channel 6
+        - port: port-channel 7
+        - port: port-channel 8
+        - port: port-channel "{{ port_channel_id_1 }}"
+  vlan 200:
+      tagged_members:
+        - port: port-channel 1
+        - port: port-channel 2
+        - port: port-channel 3
+        - port: port-channel 4
+        - port: port-channel 5
+        - port: port-channel 6
+        - port: port-channel 7
+        - port: port-channel 8
+        - port: port-channel "{{ port_channel_id_1 }}"
+
+leaf_lag:
+  port-channel 1:
+     type: dynamic
+     channel_members:
+       - port: ethernet 1/1/1:1
+         mode: "active"
+         lacp_rate_fast: true
+  port-channel 2:
+     type: dynamic
+     channel_members:
+       - port: ethernet 1/1/1:2
+         mode: "active"
+         lacp_rate_fast: true
+  port-channel 3:
+     type: dynamic
+     channel_members:
+       - port: ethernet 1/1/1:3
+         mode: "active"
+         lacp_rate_fast: true
+  port-channel 4:
+     type: dynamic
+     channel_members:
+       - port: ethernet 1/1/1:4
+         mode: "active"
+         lacp_rate_fast: true
+  port-channel 5:
+     type: dynamic
+     channel_members:
+       - port: ethernet 1/1/2:1
+         mode: "active"
+         lacp_rate_fast: true
+  port-channel 6:
+     type: dynamic
+     channel_members:
+       - port: ethernet 1/1/2:2
+         mode: "active"
+         lacp_rate_fast: true
+  port-channel 7:
+     type: dynamic
+     channel_members:
+       - port: ethernet 1/1/2:3
+         mode: "active"
+         lacp_rate_fast: true
+  port-channel 8:
+     type: dynamic
+     channel_members:
+       - port: ethernet 1/1/2:4
+         mode: "active"
+         lacp_rate_fast: true
+
+dellos_lag: "{{ leaf_lag | combine(addtl_lag|default({})) }}"

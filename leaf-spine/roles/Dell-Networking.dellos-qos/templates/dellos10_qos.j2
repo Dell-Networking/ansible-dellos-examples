@@ -1,0 +1,51 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{#####################################################
+
+Purpose:
+Configure qos commands for dellos10 Devices.
+
+dellos_qos:
+  policy_map:
+   - name: testpolicy
+     type: qos
+     state: present
+  class_map:
+   - name: testclass
+     type: application
+     state: present
+
+#####################################################}
+{% if dellos_qos is defined and dellos_qos %}
+{% for key in dellos_qos.keys() %}
+  {% if key =="policy_map" %}
+    {% for vars in dellos_qos[key] %}
+      {% if vars.name is defined and vars.name %}
+        {% if vars.state is defined and vars.state == "absent" %}
+no policy-map {{ vars.name }}
+        {% else %}
+          {% if vars.type is defined and vars.type %}
+policy-map type {{ vars.type }} {{ vars.name }}
+          {% else %}
+policy-map type qos {{ vars.name }}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% elif key =="class_map" %}
+    {% for vars in dellos_qos[key] %}
+      {% if vars.name is defined and vars.name %}
+        {% if vars.state is defined and vars.state == "absent" %}
+no class-map {{ vars.name }}
+        {% else %}
+          {% if vars.type is defined and vars.type %}
+class-map type {{ vars.type }} {{ vars.name }}
+          {% else %}
+class-map type qos {{ vars.name }}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+
+  {% endif %}
+{% endfor %}
+{% endif %}

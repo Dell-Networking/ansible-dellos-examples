@@ -1,0 +1,17 @@
+# Copyright (c) 2017 Dell Inc.
+---
+galaxy_info:
+  author: Dell EMC Networking Engineering
+  description: The dellos-image-upgrade role facilitates install/upgrade software image for OS10 switches
+  license:  Apache 2.0
+  min_ansible_version: 2.2
+
+  platforms:
+  - name: Dell OS10
+
+  galaxy_tags:
+    - Networking
+    - Dell
+    - EMC
+    - OS10
+    - DellEMC

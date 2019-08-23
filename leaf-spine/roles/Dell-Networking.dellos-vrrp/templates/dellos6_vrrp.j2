@@ -1,0 +1,74 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{#########################################
+Purpose:
+Configure VRRP Interface on OS6 Devices
+
+Variable file example:
+---
+# VLAN Interface
+dellos_vrrp:
+    vlan 4:
+        - vrrp_group_id: 4
+          state: present
+          description: "Interface-vrrp4"
+          virtual_address: 10.2.0.1
+          enable: true
+          priority: 120
+          preempt: false
+
+#######################################
+#}
+{% if dellos_vrrp is defined and dellos_vrrp %}
+{% for key  in dellos_vrrp.keys() %}
+  {% set vrrp_vars = dellos_vrrp[key] %}
+  {% if vrrp_vars %}
+interface {{ key }}
+  {% for group in vrrp_vars %}
+    {% if group.vrrp_group_id is defined and group.vrrp_group_id %}
+      {% if group.state is defined and group.state == "absent" %}
+        {% if group.enable is defined and not group.enable %}
+no vrrp {{ group.vrrp_group_id }} mode
+        {% endif %}
+no vrrp {{ group.vrrp_group_id }}
+      {% else %}
+vrrp {{ group.vrrp_group_id }}
+       {% if group.virtual_address is defined %}
+          {% if group.virtual_address %}
+vrrp {{ group.vrrp_group_id }} ip {{ group.virtual_address }}
+          {% endif %}
+        {% endif %}
+        {% if group.description is defined %}
+          {% if group.description %}
+vrrp {{ group.vrrp_group_id }} description {{ group.description }}
+          {% else %}
+no vrrp {{ group.vrrp_group_id }} description
+          {% endif %}
+        {% endif %}
+        {% if group.preempt is defined %}
+          {% if group.preempt %}
+vrrp {{ group.vrrp_group_id }} preempt
+          {% else %}
+no vrrp {{ group.vrrp_group_id }} preempt
+          {% endif %}
+        {% endif %}
+        {% if group.enable is defined %}
+          {% if group.enable %}
+vrrp {{ group.vrrp_group_id }} mode
+          {% else %}
+no vrrp {{ group.vrrp_group_id }} mode
+          {% endif %}
+        {% endif %}
+        {% if group.priority is defined %}
+          {% if group.priority %}
+vrrp {{ group.vrrp_group_id }} priority {{ group.priority }}
+          {% else %}
+no vrrp {{ group.vrrp_group_id }} priority
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+exit
+  {% endif %}
+{% endfor %}
+{% endif %}

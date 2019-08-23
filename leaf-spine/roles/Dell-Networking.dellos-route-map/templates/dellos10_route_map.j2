@@ -1,0 +1,298 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{#####################################################
+
+Purpose:
+Configure route-map commands for dellos10 Devices.
+
+dellos_route_map:
+  as_path:
+    - access_list: aa
+      permit: true
+      regex: www
+      state: present
+  community_list:
+    - type: standard
+      name: qqq
+      permit: false
+      community: internet
+      state: present
+  extcommunity_list:
+    - type: standard
+      name: qqq
+      permit: false
+      community: "rt 22:33"
+      state: present
+  route_map:
+    - name:  test
+      permit: true
+      seq_num: 1
+      continue: 20
+      match:
+       - ip_type: ipv4
+         access_group: testaccess
+         prefix_list: testprefix
+      set:
+        local_pref: 1200
+        metric_type: internal
+        metric: + 30
+        origin: igp
+        weight: 50
+        next_hop: 
+          - type: ip
+            address: 10.1.1.1
+            track_id: 3
+            state: present
+        community: internet
+        comm_list: 
+          add: qq
+          delete: qqq
+        extcommunity: "22:33"
+        extcomm_list:
+          add: aa
+          delete: aa
+      state: present 
+
+#####################################################}
+{% if dellos_route_map is defined and dellos_route_map %}
+{% for key in dellos_route_map.keys() %}
+  {% if key == "route_map" %}
+    {% for vars in dellos_route_map[key] %}
+      {% if vars.name is defined and vars.name %}
+        {% if vars.state is defined and vars.state == "absent" %}
+no route-map {{ vars.name }}
+        {% else %}
+          {% if vars.permit is defined and vars.permit %}
+            {% if vars.seq_num is defined and vars.seq_num %}
+route-map {{ vars.name }} permit {{ vars.seq_num }}
+            {% else %}
+route-map {{ vars.name }} permit 10
+            {% endif %}
+          {% elif vars.permit is defined and not vars.permit %}
+            {% if vars.seq_num is defined and vars.seq_num %}
+route-map {{ vars.name }} deny {{ vars.seq_num }}
+            {% else %}
+route-map {{ vars.name }} deny 10
+            {% endif %}
+          {% else %}
+            {% if vars.seq_num is defined and vars.seq_num %}
+route-map {{ vars.name }} permit {{ vars.seq_num }}
+            {% else %}
+route-map {{ vars.name }} permit 10
+            {% endif %}
+          {% endif %}
+          {% if vars.set is defined and vars.set %}
+            {% if vars.set.local_pref is defined %}
+              {% if vars.set.local_pref %}
+ set local-preference {{ vars.set.local_pref }}
+              {% else %}
+ no set local-preference
+              {% endif %}
+            {% endif %}
+            {% if vars.set.metric_type is defined %}
+              {% if vars.set.metric_type %}
+ set metric-type {{ vars.set.metric_type }}
+              {% else %}
+ no set metric-type internal
+              {% endif %}
+            {% endif %}
+            {% if vars.set.metric is defined %}
+              {% if vars.set.metric %}
+ set metric {{ vars.set.metric }}
+              {% else %}
+ no set metric
+              {% endif %}
+            {% endif %} 
+            {% if vars.set.origin is defined %}
+              {% if vars.set.origin %}
+ set origin {{ vars.set.origin }}
+              {% else %}
+ no set origin
+              {% endif %}
+            {% endif %}
+            {% if vars.set.community is defined %}
+              {% if vars.set.community %}
+ set community {{ vars.set.community }}
+              {% else %}
+ no set community internet
+              {% endif %}
+            {% endif %}
+            {% if vars.set.extcommunity is defined %}
+              {% if vars.set.extcommunity %}
+ set extcommunity rt {{ vars.set.extcommunity }}
+              {% else %}
+ no set extcommunity rt 11:33
+              {% endif %}
+            {% endif %}
+            {% if vars.set.weight is defined %}
+              {% if vars.set.weight %}
+ set weight {{ vars.set.weight }}
+              {% else %}
+ no set weight
+              {% endif %}
+            {% endif %}
+            {% if vars.set.comm_list is defined and vars.set.comm_list %}
+              {% if vars.set.comm_list.add is defined and vars.set.comm_list.add %}
+ set comm-list {{ vars.set.comm_list.add }} add
+              {% else %}
+ no set comm-list aa add
+              {% endif %}
+              {% if vars.set.comm_list.delete is defined and vars.set.comm_list.delete %}
+ set comm-list {{ vars.set.comm_list.delete }} delete
+              {% else %}
+ no set comm-list aa delete
+              {% endif %}
+            {% endif %}
+            {% if vars.set.extcomm_list is defined and vars.set.extcomm_list %}
+              {% if vars.set.extcomm_list.add is defined and vars.set.extcomm_list.add %}
+ set extcomm-list {{ vars.set.extcomm_list.add }} add
+              {% else %}
+ no set extcomm-list aa add
+              {% endif %}
+              {% if vars.set.extcomm_list.delete is defined and vars.set.extcomm_list.delete %}
+ set extcomm-list {{ vars.set.extcomm_list.delete }} delete
+              {% else %}
+ no set extcomm-list aa delete
+              {% endif %}
+            {% endif %}
+            {% if vars.set.next_hop is defined and vars.set.next_hop %}
+              {% for item in vars.set.next_hop %}
+                {% if item.type is defined and item.type %}
+                  {% if item.address is defined and item.address %}
+                    {% if item.state is defined and item.state=="absent" %}
+ no  set {{ item.type }} next-hop {{ item.address }}
+                    {% else %}
+                      {% if item.track_id is defined and item.track_id %}
+ set {{ item.type }} next-hop {{ item.address }} track-id {{ item.track_id }}
+                      {% else %}
+ set {{ item.type }} next-hop {{ item.address }}
+                      {% endif %}
+                    {% endif %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          {% endif %}
+          {% if vars.continue is defined %}
+            {% if vars.continue %}
+ continue {{ vars.continue }}
+            {% else %}
+ no continue
+            {% endif %}
+          {% endif %}
+          {% if vars.match is defined and vars.match %}
+            {% for match in vars.match %}
+              {% if match.ip_type is defined and match.ip_type %}
+                {% if match.ip_type =="ipv4" %}
+                  {% set ip = "ip" %}
+                {% else %}
+                  {% set ip = "ipv6" %}
+                {% endif %}
+                {% if match.access_group is defined %}
+                  {% if match.access_group %}
+ match {{ ip }} address {{ match.access_group }}
+                  {% else %}
+ no match {{ ip }} address a
+                  {% endif %}
+                {% endif %}
+                {% if match.prefix_list is defined %}
+                  {% if match.prefix_list %}
+ match {{ ip }} address prefix-list {{ match.prefix_list }}
+                  {% else %}
+ no match {{ ip }} address prefix-list a
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+ exit
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% elif key == "as_path" %}
+    {% for item in dellos_route_map[key] %}
+      {% if item.access_list is defined and item.access_list %}
+        {% if item.permit is defined %}
+          {% if item.permit %}
+            {% set filter = "permit" %}
+          {% else %}
+            {% set filter = "deny" %}
+          {% endif %}
+          {% if item.regex is defined and item.regex %}
+            {% if item.state is defined and item.state == "absent" %}
+no ip as-path access-list {{ item.access_list }} {{ filter }} {{ item.regex }}
+            {% else %}
+ip as-path access-list {{ item.access_list }} {{ filter }} {{ item.regex }}
+            {% endif %}
+          {% endif %}
+        {% else %}
+          {% if item.state is defined and item.state == "absent" %}
+no ip as-path access-list {{ item.access_list }}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% elif key == "community_list" %}
+    {% for item in dellos_route_map[key] %}
+      {% if item.type is defined and item.type %}
+        {% if item.name is defined and item.name %}
+          {% if item.permit is defined %}
+            {% if item.permit %}
+              {% set filter = "permit" %}
+            {% else %}
+              {% set filter = "deny" %}
+            {% endif %}
+            {% if item.regex is defined and item.regex %}
+              {% if item.state is defined and item.state == "absent" %}
+no ip community-list standard {{ item.name }} {{ filter }} {{ item.regex }}
+              {% else %}
+ip community-list standard {{ item.name }} {{ filter }} {{ item.regex }}
+              {% endif %}
+            {% elif item.community is defined and item.community %}
+              {% if item.state is defined and item.state == "absent" %}
+no ip community-list standard {{ item.name }} {{ filter }} {{ item.community }}
+              {% else %}
+ip community-list {{ item.type }} {{ item.name }} {{ filter }} {{ item.community }}
+              {% endif %}
+            {% endif %}
+          {% else %}
+            {% if item.state is defined and item.state == "absent" %}
+no ip community-list standard {{ item.name }}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% elif key == "extcommunity_list" %}
+    {% for item in dellos_route_map[key] %}
+      {% if item.type is defined and item.type %}
+        {% if item.name is defined and item.name %}
+          {% if item.permit is defined %}
+            {% if item.permit %}
+              {% set filter = "permit" %}
+            {% else %}
+              {% set filter = "deny" %}
+            {% endif %}
+            {% if item.regex is defined and item.regex %}
+              {% if item.state is defined and item.state == "absent" %}
+no ip extcommunity-list standard {{ item.name }} {{ filter }} {{ item.regex }}
+              {% else %}
+ip extcommunity-list standard {{ item.name }} {{ filter }} {{ item.regex }}
+              {% endif %}
+            {% elif item.community is defined and item.community %}
+              {% if item.state is defined and item.state == "absent" %}
+no ip extcommunity-list standard {{ item.name }} {{ filter }} {{ item.community }}
+              {% else %}
+ip extcommunity-list {{ item.type }} {{ item.name }} {{ filter }} {{ item.community }}
+              {% endif %}
+            {% endif %}
+          {% else %}
+            {% if item.state is defined and item.state == "absent" %}
+no ip extcommunity-list standard {{ item.name }}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+{% endif %}

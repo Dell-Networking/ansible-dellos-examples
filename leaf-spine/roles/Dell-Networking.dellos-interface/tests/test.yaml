@@ -1,0 +1,5 @@
+---
+- hosts: datacenter
+  connection: network_cli
+  roles:
+    - Dell-Networking.dellos-interface

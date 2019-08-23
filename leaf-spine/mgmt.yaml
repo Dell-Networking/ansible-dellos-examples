@@ -1,0 +1,17 @@
+---
+
+- hosts: management
+  gather_facts: no
+  connection: network_cli
+  tasks:
+    - name: Generating mgmt configuration
+      template:
+        src: "./templates/{{inventory_hostname}}.j2"
+        dest: "{{ build_dir }}/mgmt_{{inventory_hostname}}.conf"
+        mode: '0644' 
+      connection: local
+
+    - name: Provisioning mgmt configuration
+      dellos9_config:
+        src: "./templates/{{inventory_hostname}}.j2"
+

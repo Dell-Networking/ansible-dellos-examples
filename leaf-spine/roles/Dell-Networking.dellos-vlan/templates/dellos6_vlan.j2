@@ -1,0 +1,70 @@
+#jinja2: trim_blocks: True,lstrip_blocks: True
+{#########################################
+
+Purpose:
+Configure VLAN Interface commands for dellos6 Devices
+
+dellos_vlan:
+  VLAN 2:
+      name: "os6vlan"
+      tagged_members:
+        - port: Te1/0/1
+          state: present
+        - port: Te1/0/2
+          state: absent
+      untagged_members:
+        - port: Te1/0/3
+          state: present
+        - port: Te1/0/4
+          state: absent
+      state: present
+
+#########################################}
+{% if dellos_vlan is defined and dellos_vlan %}
+{% for key  in dellos_vlan.keys() %}
+{% set vlan_id = key.split(" ") %}
+{% set vlan_vars = dellos_vlan[key] %}
+  {% if vlan_vars.state is defined and vlan_vars.state=="absent" %}
+no interface vlan {{ vlan_id[1] }}
+no vlan {{ vlan_id[1] }}
+  {% else %}
+vlan {{ vlan_id[1] }}
+    {% if vlan_vars.name is defined %}
+      {% if vlan_vars.name%}
+name "{{ vlan_vars.name }}"
+      {% else %}
+no name
+      {% endif %}
+    {% endif %}
+exit
+    {% if vlan_vars.untagged_members is defined %}
+      {% for ports in vlan_vars.untagged_members %}
+        {% if ports.port is defined and ports.port %}
+          {% if ports.state is defined and ports.state == "absent" %}
+interface {{ ports.port }}
+no switchport access vlan
+          {% else %}
+interface {{ ports.port }}
+switchport access vlan {{ vlan_id[1] }}
+          {% endif %}
+        {% endif %}
+exit
+      {% endfor %}
+    {% endif %}
+    {% if vlan_vars.tagged_members is defined %}
+      {% for ports in vlan_vars.tagged_members %}
+        {% if ports.port is defined and ports.port %}
+          {% if ports.state is defined and ports.state=="absent" %}
+interface {{ ports.port }}
+no switchport trunk allowed vlan
+          {% else %}
+interface {{ ports.port }}
+switchport trunk allowed vlan {{ vlan_id[1] }}
+          {% endif %}
+        {% endif %}
+exit
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+{% endif %} 

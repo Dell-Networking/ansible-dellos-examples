@@ -1,0 +1,9 @@
+---
+
+- hosts: datacenter
+  gather_facts: no
+  connection: network_cli
+  roles:
+        - Dell-Networking.dellos-interface
+        - Dell-Networking.dellos-lag
+        - Dell-Networking.dellos-bgp

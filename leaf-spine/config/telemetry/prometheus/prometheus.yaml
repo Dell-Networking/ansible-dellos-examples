@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  - job_name: 'snmp'
+    static_configs:
+      - targets:               
+        - 192.168.1.155   #SNMP devices
+        - 192.168.1.156
+        - 192.168.1.157 
+    metrics_path: /snmp
+    params:
+      module: [OS10]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 172.20.0.4:9116 # The SNMP exporter's real hostname:port.

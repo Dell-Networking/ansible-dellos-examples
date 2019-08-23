@@ -1,0 +1,239 @@
+---
+# vars file for Dell-Networking.dellos-bgp, below gives a sample configuration
+
+# Sample variables for dellos10 device
+  dellos_bgp:
+    asn: 12
+    maxpath_ibgp: 2
+    log_neighbor_changes: true
+    fast_ext_fallover: false
+    always_compare_med: true
+    default_loc_pref: 1000
+    confederation:
+      identifier: 25
+      peers: 23 24
+      peers_state: present
+    route_reflector:
+      client_to_client: false
+      cluster_id: 4294967295
+    address_family_ipv4:
+      aggregate_address:
+         - ip_and_mask: 1.1.1.1/16
+           state: present
+      dampening:
+        value: 15 750 2000 60
+        route_map: qq
+        state: present
+    best_path:
+       as_path: ignore
+       as_path_state: absent
+       ignore_router_id: true
+       med:
+        - attribute: confed
+          state: present
+        - attribute: missing-as-worst
+          state: present
+    ipv4_network:
+      - address: 101.1.1.0/30
+        state: present
+    neighbor:
+      - name: peer1
+        type: peergroup
+        remote_asn: 14
+        distribute_list:
+           in: aaa
+           in_state: present
+        subnet: 10.128.4.192/27
+        state: present
+      - type: ipv4
+        remote_asn: 11
+        ip: 192.168.10.1
+        peergroup: peer1
+        peergroup_state: present
+        sender_loop_detect: true
+        password: bgppassword
+        route_reflector_client: true
+        address_family:
+          - type: ipv4
+            activate: true
+            state: present
+        send_community:
+          - type: standard
+            state: present
+        state: present
+      - type: ipv4
+        remote_asn: 13
+        local_as: 10
+        weight: 10
+        ip: 192.168.12.3
+        address_family:
+          - type: ipv4
+            activate: true
+            allow_as_in: 5
+            next_hop_self: true
+            soft_reconf: true
+            add_path: both 3
+            route_map:
+              - name: qq
+                filter: in
+                state: present
+            state: present
+        distribute_list:
+           in: aa
+           in_state: present
+        state: present
+      - name: peer1
+        type: peergroup
+        remote_asn: 12
+        subnet: 10.128.4.192/27
+        limit: 4
+        state: present
+    ipv6_network:
+      - address: "2001:4898:5808:ffa0::4/126"
+        state: present
+      - address: "2001:4898:5808:ffa1::4/126"
+        state: present
+    redistribute:
+      - route_type: static
+        state: present
+        address_type: ipv4
+    state: absent
+
+# Sample variables for dellos6 device
+  dellos_bgp:
+    asn: 11
+    router_id: 1.1.1.1
+    maxpath_ibgp: 2
+    maxpath_ebgp: 2
+    ipv4_network:
+       - address: 101.1.2.0 255.255.255.0
+         state: present
+    ipv6_network:
+       - address: 2001:4898:5808:ffa0::/126
+         state: present
+    neighbor:
+      - type: ipv4
+        ip: 10.10.234.16
+        remote_asn: 64818
+        timer: 2 5
+        default_originate: True
+        peer_group: MUX_HNV_ACCESS
+        src_loopback: 2
+        src_loopback_state: present
+        state: present
+      - type: ipv6
+        ip: 2001:4898:5808:ffa2::1
+        timer: 2 4
+        default_originate: True
+        ebgp_multihope: 3
+        remote_asn: 64818
+        peer_group: MUX_HNV_ACCESS
+        state: present
+      - type: peergroup
+        name: MUX_HNV_ACCESS
+        time: 2 4
+        ebgp_multihop: 4
+        remote_asn: 64918
+        subnet: 10.128.5.192/27
+        state: present
+    redistribute:
+      - route_type: connected
+        address_type: ipv6
+        state: present
+    state: present
+
+# Sample variables for dellos9 device
+  dellos_bgp:
+    asn: 11
+    router_id: 192.168.3.100
+    maxpath_ibgp: 2
+    maxpath_ebgp: 2
+    best_path:
+       as_path: ignore
+       as_path_state: absent
+       ignore_router_id: true
+       med:
+        - attribute: confed
+          state: present
+        - attribute: missing-as-best
+          state: present
+    ipv4_network:
+      - address: 102.1.1.0/30
+        state: present
+    ipv6_network:
+      - address: "2001:4898:5808:ffa0::/126"
+        state: present
+      - address: "2001:4898:5808:ffa1::/126"
+        state: present
+    neighbor:
+      - name: per
+        type: peergroup
+        remote_asn: 12
+        remote_asn_state: absent
+        default_originate: False
+        src_loopback: 0
+        src_loopback_state: present
+        ebgp_multihop: 255
+        state: present
+
+      - name: peer1
+        type: peergroup
+        remote_asn: 14
+        distribute_list:
+           in: an
+           in_state: present
+           out: bb
+           out_state: present
+        passive: True
+        subnet: 10.128.4.192/27
+        state: present
+
+      - ip: 192.168.10.2
+        type: ipv4
+        remote_asn: 12
+        timer: 5 10
+        default_originate: False
+        peergroup: per
+        peergroup_state: present
+        distribute_list: 
+           in: aa
+           in_state: present
+        admin: up
+        state: present
+
+      - ip: 192.168.13.3
+        type: ipv4
+        remote_asn: 13
+        sender_loop_detect: false
+        src_loopback: 1
+        src_loopback_state: present
+        distribute_list:
+           in: aa
+           in_state: present
+           out: aa
+           out_state: present
+        ebgp_multihop: 25
+        state: present
+
+      - ip: 2001:4898:5808:ffa2::1
+        type: ipv6
+        remote_asn: 14
+        peergroup: per
+        peergroup_state: present
+        distribute_list:
+           in: aa
+           in_state: present
+        src_loopback: 0
+        src_loopback_state: present
+        ebgp_multihop: 255
+        admin: up
+        state: present
+    redistribute:
+      - route_type: static
+        state: present
+        address_type: ipv4
+      - route_type: connected
+        address_type: ipv6
+        state: present
+    state: present
+

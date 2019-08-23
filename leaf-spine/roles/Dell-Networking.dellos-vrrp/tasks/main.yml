@@ -1,0 +1,49 @@
+---
+# tasks file for Dell-Networking.dellos-vrrp
+
+ - name: "Generating VRRP configuration for dellos9"
+   template:
+      src: dellos9_vrrp.j2
+      dest: "{{ build_dir }}/vrrp9_{{hostname}}.conf.part"
+   when: (ansible_network_os is defined and ansible_network_os == "dellos9") and ((dellos_cfg_generate | default('False')) | bool)
+#   notify: save config os9
+   register: generate_output
+
+ - name: "Provisioning VRRP configuration for dellos9"
+   dellos9_config:
+      src: dellos9_vrrp.j2
+   when: (ansible_network_os is defined and ansible_network_os == "dellos9") 
+#   notify: save config os9
+   register: output
+
+ - name: "Generating VRRP configuration for dellos6"
+   template:
+      src: dellos6_vrrp.j2
+      dest: "{{ build_dir }}/vrrp6_{{hostname}}.conf.part"
+   when: (ansible_network_os is defined and ansible_network_os == "dellos6") and ((dellos_cfg_generate | default('False')) | bool)
+#   notify: save config os6
+   register: generate_output
+
+ - name: "Provisioning VRRP configuration for dellos6"
+   dellos6_config:
+      src: dellos6_vrrp.j2
+   when: (ansible_network_os is defined and ansible_network_os == "dellos6")
+#   notify: save config os6
+   register: output
+
+ - name: "Generating VRRP configuration for dellos10"
+   template:
+      src: dellos10_vrrp.j2
+      dest: "{{ build_dir }}/vrrp10_{{hostname}}.conf.part"
+   when: (ansible_network_os is defined and ansible_network_os == "dellos10") and ((dellos_cfg_generate | default('False')) | bool)
+#   notify: save config os10
+   register: generate_output
+
+ - name: "Provisioning VRRP configuration for dellos10"
+   dellos10_config:
+      src: dellos10_vrrp.j2
+   when: (ansible_network_os is defined and ansible_network_os == "dellos10") 
+#   notify: save config os10
+   register: output
+
+

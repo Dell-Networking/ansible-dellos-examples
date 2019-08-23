@@ -1,0 +1,6 @@
+---
+
+ansible_network_os: dellos9
+ansible_become: true
+ansible_become_method: enable
+ansible_become_pass: force10
