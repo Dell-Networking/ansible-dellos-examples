@@ -1,7 +1,7 @@
 ---
 
-ansible_ssh_user: admin
-ansible_ssh_pass: admin
+ansible_ssh_user: xxxxx
+ansible_ssh_pass: xxxxx
 ansible_network_os: dellos10
 
 dellos_cfg_generate: False
