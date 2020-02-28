@@ -1,0 +1,15 @@
+---
+- hosts: datacenter
+  connection: network_cli
+  vars:
+    build_dir: "/home/administrator/ansible/debug"
+
+  roles:
+    - ansible-role-dellos-vrf
+    - ansible-role-dellos-interface
+    - ansible-role-dellos-system
+    - ansible-role-dellos-bgp
+    - ansible-role-dellos-lag
+    - ansible-role-dellos-vlan
+    - ansible-role-dellos-vxlan
+    - ansible-role-dellos-vlt

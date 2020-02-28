@@ -1,0 +1,39 @@
+---
+hostname: Host2 
+dellos_system:
+  hostname: "Host2"
+
+dellos_interface:
+  port-channel 10:
+    switchport: False
+    admin: up
+  vlan 100:
+    ip_and_mask: "15.1.1.5/24"
+    admin: up
+  vlan 300:
+    ip_and_mask: "25.1.1.5/24"
+    admin: up
+
+dellos_lag:
+  port-channel 10:
+    type: dynamic
+    channel_members:
+      - port: ethernet1/1/1
+        mode: active
+      - port: ethernet1/1/2
+        mode: active
+    state: present
+
+dellos_vlan:
+  vlan 100:
+    tagged_members:
+      - port: port-channel10
+        state: "present"
+        access_vlan: "false"
+    state: "present"
+  vlan 300:
+    tagged_members:
+      - port: port-channel10
+        state: "present"
+        access_vlan: "false"
+    state: "present"

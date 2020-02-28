@@ -1,0 +1,94 @@
+---
+hostname: spine2 
+dellos_system:
+  hostname: "spine2"
+
+dellos_bgp:
+  asn: 201
+  router_id: 9.9.9.20
+  neighbor: 
+    - type: "peergroup" 
+      name: "ebgp_session"
+      send_community:
+        - type: extended
+          state: present
+      address_family: 
+        - type: l2vpn
+          activate: true
+          state: present
+      state: present
+    - type: ipv4 
+      interface: vlan20
+      peergroup: ebgp_session 
+      peergroup_type: ebgp
+      admin: up
+      state: present
+    - type: ipv4 
+      interface: vlan40
+      peergroup: ebgp_session 
+      peergroup_type: ebgp
+      admin: up
+      state: present
+    - type: ipv4 
+      interface: vlan60
+      peergroup: ebgp_session 
+      peergroup_type: ebgp
+      admin: up
+      state: present
+    - type: ipv4 
+      interface: vlan80
+      peergroup: ebgp_session 
+      peergroup_type: ebgp
+      admin: up
+      state: present
+  state: "present"
+
+
+dellos_interface:
+  vlan 20:
+    suppress_ra: absent
+    min_ra: 3
+    max_ra: 4
+    admin: up
+  vlan 40:
+    suppress_ra: absent
+    min_ra: 3
+    max_ra: 4
+    admin: up
+  vlan 60:
+    suppress_ra: absent
+    min_ra: 3
+    max_ra: 4
+    admin: up
+  vlan 80:
+    suppress_ra: absent
+    min_ra: 3
+    max_ra: 4
+    admin: up
+
+dellos_vlan:
+  vlan 20:
+    tagged_members:
+      - port: ethernet 1/1/1
+        state: "present"
+        access_vlan: "false"
+    state: "present"
+  vlan 40:
+    tagged_members:
+      - port: ethernet 1/1/2
+        state: "present"
+        access_vlan: "false"
+    state: "present"
+  vlan 60:
+    tagged_members:
+      - port: ethernet 1/1/3
+        state: "present"
+        access_vlan: "false"
+    state: "present"
+  vlan 80:
+    tagged_members:
+      - port: ethernet 1/1/4
+        state: "present"
+        access_vlan: "false"
+    state: "present"
+
