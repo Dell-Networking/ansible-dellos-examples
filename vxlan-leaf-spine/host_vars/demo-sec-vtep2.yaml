@@ -1,0 +1,193 @@
+---
+hostname: leaf2
+dellos_system:
+  hostname: "VLT2-SEC"
+
+dellos_bgp:
+  asn: 300
+  router_id: 2.2.2.20
+  neighbor: 
+    - type: ipv4 
+      interface: vlan70
+      send_community:
+        - type: extended
+          state: present
+      address_family: 
+        - type: l2vpn
+          activate: true
+          state: present
+      admin: up
+      state: present
+    - type: ipv4 
+      interface: vlan80
+      send_community:
+        - type: extended
+          state: present
+      address_family: 
+        - type: l2vpn
+          activate: true
+          state: present
+      admin: up
+      state: present
+    - type: ipv4 
+      interface: vlan11
+      send_community:
+        - type: extended
+          state: present
+      address_family: 
+        - type: l2vpn
+          activate: true
+          state: present
+      admin: up
+      state: present
+  ipv4_network: 2.2.2.2/32
+  redistribute:
+    - route_type: connected
+      address_type: ipv4   
+      state: present
+  state: "present"
+
+
+dellos_interface:
+  loopback 0:
+    admin: up
+    ip_and_mask: 2.2.2.2/32
+  loopback 10:
+    admin: up
+    vrf: "test"
+    ip_and_mask: 80.1.1.10/32
+  loopback 20:
+    admin: up
+    vrf: "test"
+    ip_and_mask: 90.1.1.10/32
+  ethernet 1/1/1:
+    admin: up
+    switchport: False
+    portmode: "trunk"
+  ethernet 1/1/2:
+    admin: up
+    switchport: False
+    portmode: "trunk"
+  ethernet 1/1/3:
+    switchport: False
+    admin: up
+  ethernet 1/1/4:
+    admin: up
+    switchport: False
+  ethernet 1/1/5:
+    switchport: False
+    vrf: "test"
+    ip_and_mask: "20.20.20.20/24"
+    admin: up
+  vlan 11:
+    suppress_ra: absent
+    min_ra: 3
+    max_ra: 4
+    admin: up
+  vlan 70:
+    suppress_ra: absent
+    min_ra: 3
+    max_ra: 4
+    admin: up
+  vlan 80:
+    suppress_ra: absent
+    min_ra: 3
+    max_ra: 4
+    admin: up
+  virtual-network 200:
+    vrf: "test"
+    ip_and_mask: "30.1.1.101/24"
+    ip_virtual_gateway_ip: "30.1.1.254"
+    admin: up
+  virtual-network 300:
+    vrf: "test"
+    ip_and_mask: "25.1.1.101/24"
+    ip_virtual_gateway_ip: "25.1.1.254"
+    admin: up
+
+dellos_vlan:
+  vlan 70:
+    tagged_members:
+      - port: ethernet 1/1/1
+        state: "present"
+        access_vlan: "false"
+    state: "present"
+  vlan 80:
+    tagged_members:
+      - port: ethernet 1/1/2
+        state: "present"
+        access_vlan: "false"
+    state: "present"
+
+dellos_vrf:
+  vrfdetails:
+    - vrf_name: "test"
+      state: "present"
+
+dellos_vxlan:
+    anycast_gateway_mac: "00:00:aa:bb:ee:ff"
+    nve:
+      source_interface: 0
+      state: "present"
+    evpn:
+      evi:
+        - id: 200
+          vni:
+            id: 200
+            state: "present"
+          rd: "auto"
+          route_target:
+            - type: "manual"
+              asn_value: "65530:65533"
+              route_target_type: "both"
+              state: "present"
+          state: "present"
+        - id: 300
+          vni:
+            id: 300
+            state: "present"
+          rd: "auto"
+          route_target:
+            - type: "auto"
+              state: "present"
+          state: "present"
+      vrf:
+        - name: "test"
+          vni: 1000
+          adv_ipv4: 
+            - type: "connected"
+              state: "present"
+            - type: "bgp"
+              state: "present"
+          route_target:
+            - type: "manual"
+              asn_value: "65530:65534"
+              route_target_type: "both"
+              state: "present"
+      rmac: 00:00:22:22:22:22
+      dis_rt_asn: "true"
+    virtual_network:
+      virtual_net:
+        - id: 200
+          vlt_vlan_id: 200
+          vxlan_vni:
+            id: 200
+            state: "present"
+          state: "present"
+        - id: 300
+          vlt_vlan_id: 300
+          vxlan_vni:
+            id: 300
+            state: "present"
+          state: "present"
+
+dellos_vlt:
+   domain: 1
+   destination_type: "ipv4"
+   peer_routing: True
+   discovery_intf: "1/1/3-1/1/4"
+   vlt_mac: 00:00:00:44:55:66
+   vlt_peers:
+     Po 10:
+        peer_lag: 10
+   state: "present"

@@ -1,0 +1,24 @@
+demo-prim-vtep1 ansible_host=200.114.34.217 ansible_network_os="dellos10"
+demo-sec-vtep1 ansible_host=200.114.34.218 ansible_network_os="dellos10"
+demo-spine1 ansible_host=200.114.34.141 ansible_network_os="dellos10"
+demo-prim-vtep2 ansible_host=200.114.34.219 ansible_network_os="dellos10"
+demo-sec-vtep2 ansible_host=200.114.34.220 ansible_network_os="dellos10"
+demo-spine2 ansible_host=200.114.34.142 ansible_network_os="dellos10"
+demo-hostA ansible_host=200.114.34.230 ansible_network_os="dellos10"
+demo-hostC ansible_host=200.114.34.232 ansible_network_os="dellos10"
+
+[site1]
+demo-prim-vtep1
+demo-sec-vtep1
+demo-spine1
+demo-hostA
+
+[site2]
+demo-prim-vtep2
+demo-spine2
+demo-sec-vtep2
+demo-hostC
+
+[datacenter:children]
+site1
+site2
