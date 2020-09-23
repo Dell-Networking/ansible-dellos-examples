@@ -1,0 +1,62 @@
+hostname: spine1
+ansible_ssh_user: xxxxx
+ansible_ssh_pass: xxxxx
+ansible_network_os: dellos10
+spine_hostname: "spine-1"
+
+dellos_interface:
+    ethernet 1/1/1:
+            desc: "Connected to leaf 1"
+            mtu: 9216
+            portmode:
+            admin: up
+            switchport: False
+            ip_and_mask: 100.1.1.1/24
+            ipv6_and_mask: 2001:100:1:1::1/64
+            state_ipv6: present
+    ethernet 1/1/17:
+            desc: "Connected to leaf 2"
+            mtu: 9216
+            portmode:
+            admin: up
+            switchport: False
+            ip_and_mask: 100.1.33.1/24
+            ipv6_and_mask: 2001:100:1:21::1/64
+            state_ipv6: present
+    ethernet 1/1/25:
+            desc: "Connected to leaf 3"
+            mtu: 9216
+            portmode:
+            admin: up
+            switchport: False
+            ip_and_mask: 100.1.17.1/24
+            ipv6_and_mask: 2001:100:1:11::1/64
+            state_ipv6: present
+    ethernet 1/1/9:
+            desc: "Connected to leaf 4"
+            mtu: 9216
+            portmode:
+            admin: up
+            switchport: False
+            ip_and_mask: 100.1.49.1/24
+            ipv6_and_mask: 2001:100:1:31::1/64
+            state_ipv6: present
+
+bgp_router_id: "100.0.1.1"
+bgp_neigh1_remote_asn: 64801
+bgp_neigh1_ip: "100.1.1.2"
+bgp_neigh2_remote_asn: 64803
+bgp_neigh2_ip: "100.1.33.2"
+bgp_neigh3_remote_asn: 64802
+bgp_neigh3_ip: "100.1.17.2"
+bgp_neigh4_remote_asn: 64804
+bgp_neigh4_ip: "100.1.49.2"
+bgp_neigh5_remote_asn: 64801
+bgp_neigh5_ip: "2001:100:1:1::2"
+bgp_neigh6_remote_asn: 64802
+bgp_neigh6_ip: "2001:100:1:11::2"
+bgp_neigh7_remote_asn: 64803
+bgp_neigh7_ip: "2001:100:1:21::2"
+bgp_neigh8_remote_asn: 64804
+bgp_neigh8_ip: "2001:100:1:31::2"
+
