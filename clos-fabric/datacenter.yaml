@@ -1,0 +1,18 @@
+---
+- hosts: datacenter
+  gather_facts: no
+  connection: local
+  roles:
+        - role: dellos-interface
+          vars:
+            dellos_cfg_generate: true
+        - role: dellos-bgp
+          vars:
+            dellos_cfg_generate: true
+        - role: dellos-snmp
+          vars:
+            dellos_cfg_generate: true
+        - role: dellos-system
+          vars:
+            dellos_cfg_generate: true
+

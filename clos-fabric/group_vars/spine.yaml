@@ -1,0 +1,85 @@
+ansible_ssh_user: xxxxx
+ansible_ssh_pass: xxxxx
+ansible_network_os: dellos10
+
+dellos_system:
+  hostname: "{{ spine_hostname }}"
+
+dellos_bgp:
+   asn: 64901
+   router_id: "{{ bgp_router_id }}"
+   best_path:
+      as_path: multipath-relax
+      as_path_state: present
+      med:
+       - attribute: missing-as-worst
+         state: present
+   neighbor:
+     - type: ipv4
+       remote_asn: "{{ bgp_neigh1_remote_asn }}"
+       ip: "{{ bgp_neigh1_ip }}"
+       admin: up
+       state: present
+     - type: ipv4
+       remote_asn: "{{ bgp_neigh2_remote_asn }}"
+       ip: "{{ bgp_neigh2_ip }}"
+       admin: up
+       state: present
+     - type: ipv4
+       remote_asn: "{{ bgp_neigh3_remote_asn }}"
+       ip: "{{ bgp_neigh3_ip }}"
+       admin: up
+       state: present
+     - type: ipv4
+       remote_asn: "{{ bgp_neigh4_remote_asn }}"
+       ip: "{{ bgp_neigh4_ip }}"
+       admin: up
+       state: present
+     - type: ipv6
+       remote_asn: "{{ bgp_neigh5_remote_asn }}"
+       ip: "{{ bgp_neigh5_ip }}"
+       admin: up
+       address_family:
+         - type: ipv4
+           activate: false
+           state: present
+         - type: ipv6
+           activate: true
+           state: present
+       state: present
+     - type: ipv6
+       remote_asn: "{{ bgp_neigh6_remote_asn }}"
+       ip: "{{ bgp_neigh6_ip }}"
+       admin: up
+       address_family:
+         - type: ipv4
+           activate: false
+           state: present
+         - type: ipv6
+           activate: true
+           state: present
+       state: present
+     - type: ipv6
+       remote_asn: "{{ bgp_neigh7_remote_asn }}"
+       ip: "{{ bgp_neigh7_ip }}"
+       admin: up
+       address_family:
+         - type: ipv4
+           activate: false
+           state: present
+         - type: ipv6
+           activate: true
+           state: present
+       state: present
+     - type: ipv6
+       remote_asn: "{{ bgp_neigh8_remote_asn }}"
+       ip: "{{ bgp_neigh8_ip }}"
+       admin: up
+       address_family:
+         - type: ipv4
+           activate: false
+           state: present
+         - type: ipv6
+           activate: true
+           state: present
+   state: present
